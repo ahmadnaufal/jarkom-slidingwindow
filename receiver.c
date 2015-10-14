@@ -1,5 +1,6 @@
 /* File : T1_rx.cpp */
 
+#include "slidingwindow.h"
 #include "receiver.h"
 
 Byte rxbuf[RXQSIZE];
