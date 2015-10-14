@@ -25,7 +25,6 @@
 #define BYTESIZE 256 /* The maximum value of a byte */
 #define MAXLEN 1024 /* Maximum messages length */ 
 #define WINSIZE 5 /* Window size */
-#define CKSUM 55 /* Checksum */
 
 typedef unsigned char Byte;
 
@@ -43,5 +42,7 @@ typedef struct ACKN {
 	Byte frameno;
 	Byte checksum; 
 } ACKN;
+
+unsigned short checksum(Byte *data, size_t bytes);
 
 #endif
