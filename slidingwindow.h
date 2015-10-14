@@ -4,6 +4,9 @@
  * Description	: Header for sliding window  
  */ 
 
+#ifndef slidingwindow_h
+#define slidingwindow_h
+
 /* ASCII Const */ 
 #define SOH 1 /* Start of Header Character */
 #define STX 2 /* Start of Text Character */
@@ -43,6 +46,6 @@ typedef struct ACKN {
 	Byte checksum; 
 } ACKN;
 
-unsigned short checksum(Byte *data, size_t bytes);
+unsigned char checksum(Byte *data, size_t bytes);
 
 #endif

@@ -1,4 +1,7 @@
-unsigned short checksum(Byte *data, size_t bytes )
+#include <stdio.h>
+#include "slidingwindow.h"
+
+unsigned char checksum(Byte *data, size_t bytes )
 {
         unsigned short sum1 = 0xff, sum2 = 0xff;
  
@@ -15,4 +18,12 @@ unsigned short checksum(Byte *data, size_t bytes )
         sum1 = (sum1 & 0xff) + (sum1 >> 8);
         sum2 = (sum2 & 0xff) + (sum2 >> 8);
         return sum2 << 8 | sum1;
+}
+
+int main() {
+        Byte *str = "ahahaha";
+
+        printf("%d\n", checksum(str, sizeof(str)));
+
+        return 0;
 }
