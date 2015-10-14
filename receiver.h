@@ -54,14 +54,20 @@ typedef struct QTYPE {
  	Byte *data;
 } QTYPE;
 
-typedef struct MESGB {
+typedef struct FRAME {
  	unsigned int soh;
+ 	Byte frameno;
  	unsigned int stx;
+ 	Byte *data;
  	unsigned int etx;
  	Byte checksum;
- 	Byte msgno;
- 	Byte *data;
-} MESGB;
+} FRAME;
+
+typedef struct ACKN {
+	unsigned int ack;
+	Byte frameno;
+	Byte checksum; 
+} ACKN;
 
 /* FUNCTIONS AND PROCEDURES */
 static Byte *rcvchar(int sockfd, QTYPE *queue);
