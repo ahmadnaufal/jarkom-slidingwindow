@@ -10,8 +10,7 @@ int receiverAddrLen = sizeof(receiverAddr);
 /* FILE AND BUFFERS */
 FILE *tFile;			// file descriptor
 char *receiverIP;		// buffer for Host IP address
-char buf[BUFMAX+1];		// buffer for character to send
-char xbuf[BUFMAX+1];	// buffer for receiving XON/XOFF characters
+char xbuf[1];				// buffer for receiving XON/XOFF characters
 FRAME *frameBuffer;
 
 /* FLAGS */
