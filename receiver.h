@@ -21,9 +21,15 @@
 #define bzero(p, size) (void)memset((p), 0 , (size))
 /* Delay to adjust speed of consuming buffer, in milliseconds */
 #define DELAY 500
-/* Define receive buffer size */
-#define RXQSIZE 8
 
+
+typedef struct QTYPE {
+ 	unsigned int count;
+ 	unsigned int front;
+ 	unsigned int rear;
+ 	unsigned int maxsize;
+ 	Byte *data;
+} QTYPE;
 
 /* FUNCTIONS AND PROCEDURES */
 static Byte *rcvchar(int sockfd, QTYPE *queue);
