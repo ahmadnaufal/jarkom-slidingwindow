@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "slidingwindow.h"
 
-unsigned char checksum(Byte *data, size_t bytes )
+unsigned short checksum(Byte *data, size_t bytes )
 {
         unsigned short sum1 = 0xff, sum2 = 0xff;
  
