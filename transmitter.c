@@ -12,6 +12,7 @@ FILE *tFile;			// file descriptor
 char *receiverIP;		// buffer for Host IP address
 char buf[BUFMAX+1];		// buffer for character to send
 char xbuf[BUFMAX+1];	// buffer for receiving XON/XOFF characters
+FRAME *frameBuffer;
 
 /* FLAGS */
 int isXON = 1;		// flag for XON/XOFF sent
@@ -54,25 +55,34 @@ int main(int argc, char *argv[]) {
 	// this is the parent process
 	// use as char transmitter from the text file
 	// connect to receiver, and read the file per character
-	int counter = 1;
-	while ((buf[0] = fgetc(tFile)) != EOF) {
+	int fcount = 0;
+	int i = 0;
+	char c;
+
+	while (c=fgetc(tFile)!=EOF) {
+		if (i==BUFMAX-1) {
+			fcount++;
+			i=0;
+			frameBuffer[fcount] = malloc(sizeof(FRAME));
+			frameBuffer[fcount].data = malloc(BUFSIZE*sizeof(Byte));
+			frameBuffer[fcount].frameno = fcount%WINSIZE;
+			frameBuffer[fcount].checksum = checksum();
+			frameBuffer[fcount].soh = SOH;
+			frameBuffer[fcount].stx = STX;
+			frameBuffer[fcount].etx = ETX;		
+		}
+		frameBuffer[fcount].data[i] = c;
+		i++;
+	}
+
+	i=0;
+	while (i<fcount) {
 		if (isXON) {
-			if (sendto(sockfd, buf, BUFMAX, 0, (const struct sockaddr *) &receiverAddr, receiverAddrLen) != BUFMAX)
+			if (sendto(sockfd, frameBuffer[i], sizeof(FRAME), 0, (const struct sockaddr *) &receiverAddr, receiverAddrLen) != BUFMAX)
 				error("ERROR: sendto() sent buffer with size more than expected.\n");
 			
-			printf("Sending byte no. %d: ", counter++);
-			switch (buf[0]) {
-				case CR:	printf("\'Carriage Return\'\n");
-							break;
-				case LF:	printf("\'Line Feed\'\n");
-							break;
-				case Endfile:
-						printf("\'End of File\'\n");
-						break;
-				case 255:	break;
-				default:	printf("\'%c\'\n", buf[0]);
-							break;
-			}
+			printf("Sending frame no. %d: %s", fcount);
+			i++;
 		} else {
 			while (!isXON) {
 				printf("Waiting for XON...\n");
