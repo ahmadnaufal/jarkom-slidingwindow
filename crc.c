@@ -39,7 +39,7 @@ unsigned short crcChecksum (Byte *data_p, unsigned short length) {
 }
 
 int main() {
-    Byte *str = "E100CAFE";
+    Byte *str = "E3";
 
     printf("%d\n", crcChecksum(str, sizeof(str)));
 
