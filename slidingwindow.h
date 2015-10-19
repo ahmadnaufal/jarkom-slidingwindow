@@ -37,7 +37,7 @@ typedef struct FRAME {
  	unsigned int stx;
  	Byte *data;
  	unsigned int etx;
- 	short checksum;
+ 	Byte checksum;
 } FRAME;
 
 typedef struct ACKN {
