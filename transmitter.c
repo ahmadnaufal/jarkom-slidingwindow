@@ -59,7 +59,8 @@ int main(int argc, char *argv[]) {
 	int i = 0;
 	char c;
 
-	while (c=fgetc(tFile)!=EOF) {
+	do {
+		c=fgetc(tFile);
 		if (i==BUFMAX-1) {
 			fcount++;
 			i=0;
@@ -71,12 +72,16 @@ int main(int argc, char *argv[]) {
 			frameBuffer[fcount].stx = STX;
 			frameBuffer[fcount].etx = ETX;		
 		}
-		frameBuffer[fcount].data[i] = c;
-		i++;
-	}
+		if (c==EOF) {
+			frameBuffer[fcount].data[i] = Endfile;
+		} else {
+			frameBuffer[fcount].data[i] = c;
+			i++;
+		}
+	} while (c!=EOF);
 
 	i=0;
-	while (i<fcount) {
+	while (i<=fcount) {
 		if (isXON) {
 			if (sendto(sockfd, frameBuffer[i], sizeof(FRAME), 0, (const struct sockaddr *) &receiverAddr, receiverAddrLen) != BUFMAX)
 				error("ERROR: sendto() sent buffer with size more than expected.\n");
@@ -92,18 +97,15 @@ int main(int argc, char *argv[]) {
 		sleep(1);
 	}
 
-	// sending endfile to receiver, marking the end of data transfer
-	buf[0] = Endfile;
-	sendto(sockfd, buf, BUFMAX, 0, (const struct sockaddr *) &receiverAddr, receiverAddrLen);
 	fclose(tFile);
 	
-	printf("Byte sending done! Closing sockets...\n");
+	printf("Frame sending done! Closing sockets...\n");
 	close(sockfd);
 	isSocketOpen = 0;
 	printf("Socket Closed!\n");
 
 	// finishing program and closing
-	printf("TRANSMITTER Finished transmitting bytes!\n");
+	printf("TRANSMITTER Finished transmitting frames!\n");
 	printf("TRANSMITTER saying goodbye and thanks!\n");
 
 	return 0;
