@@ -1,9 +1,13 @@
-/* File : T1_rx.cpp */
+/* 
+ * File 		: receiver.c
+ * Author 		: Ahmad Naufal (049) - Tifani Warnita (055) - Asanilta Fahda (079)
+ * Description	: Main source code program for receiver
+ */ 
 
 #include "slidingwindow.h"
 #include "receiver.h"
 
-Byte rxbuf[RXQSIZE];
+FRAME rxbuf[RXQSIZE];
 QTYPE rcvq = { 0, 0, 0, RXQSIZE, rxbuf };
 QTYPE *rxq = &rcvq;
 Byte sent_xonxoff = XON;
@@ -68,43 +72,54 @@ void error(const char *message) {
 	exit(1);
 }
 
-static Byte *rcvchar(int sockfd, QTYPE *queue)
+static FRAME *rcvframe(int sockfd, QTYPE *queue)
 {
  	/* Insert code here. Read a character from socket and put it to the receive buffer.
  	If the number of characters in the receive buffer is above certain level, then send
  	XOFF and set a flag (why?). Return a pointer to the buffer where data is put. */
  	Byte* current;
- 	char tempBuf[1];
+ 	FRAME frame[1];
+ 	int frame_size;
  	char b[1];
  	static int counter = 1;
 
- 	if (recvfrom(sockfd, tempBuf, 1, 0, (struct sockaddr *) &srcAddr, &srcLen) < 0)
+ 	if (recvfrom(sockfd, frame, &frame_size, 0, (struct sockaddr *) &srcAddr, &srcLen) < 0)
  		error("ERROR: Failed to receive character from socket\n");
 
- 	current = (Byte *) malloc(sizeof(Byte));
- 	*current = tempBuf[0];
+ 	printf("Receiving frame no. %d: %s", frame[0].frameno, frame[0].data);
 
- 	if (*current != Endfile) {
- 		printf("Receiving byte no. %d: ", counter++);
-		switch (*current) {
-			case CR:	printf("\'Carriage Return\'\n");
-						break;
-			case LF:	printf("\'Line Feed\'\n");
-						break;
-			case Endfile:
-						printf("\'End of File\'\n");
-						break;
-			case 255:	break;
-			default:	printf("\'%c\'\n", *current);
-						break;
-		}
- 	}
+ 	// receiving frame from transmitter
+ 	if (crcChecksum(frame[0]) == frame[0].checksum) {
+ 		printf("[ACK] Package %d secure. Sending ACK %d...\n", frame[0].frameno);
+ 		ACKN *ack = {ACK, frame[0].frameno, 0};
 
- 	// adding char to buffer and resync the buffer queue
- 	if (queue->count < 8) {
- 		queue->rear = (queue->count > 0) ? (queue->rear+1) % 8 : queue->rear;
- 		queue->data[queue->rear] = *current;
- 		queue->count++;
+ 		// serialize the ACK packet
+ 		Byte* serialized = serializeACK(ack);
+ 		ack->checksum = crcChecksum(serialized);
+ 		serialized = serializeACK(ack);
+
+ 		// send the serialized ACK packet
+ 		if(sendto(sockfd, serialized, sizeof(serialized), 0,(struct sockaddr *) &srcAddr, srcLen) < 0)
+ 			error("ERROR: Failed to send ACK.\n");
+
+ 		// adding char to buffer and resync the buffer queue
+ 		if (queue->count < 8) {
+	 		queue->rear = (queue->count > 0) ? (queue->rear+1) % 8 : queue->rear;
+	 		queue->data[queue->rear] = frame[0];
+	 		queue->count++;
+	 	}
+ 	} else {
+ 		printf("[NAK] Package %d error or corrupt. Sending NAK %d...\n", frame[0].frameno, frame[0].frameno);
+ 		ACKN *nak = {NAK, frame[0].frameno, 0};
+
+ 		// serialize the ACK packet
+ 		Byte* serialized = serializeACK(ack);
+ 		ack->checksum = crcChecksum(serialized);
+ 		serialized = serializeACK(ack);
+
+ 		// send the serialized ACK packet
+ 		if(sendto(sockfd, serialized, sizeof(serialized), 0,(struct sockaddr *) &srcAddr, srcLen) < 0)
+ 			error("ERROR: Failed to send NAK.\n");
  	}
 
  	// if the buffer reaches Minimum Upperlimit, send XOFF to Transmitter
@@ -112,12 +127,11 @@ static Byte *rcvchar(int sockfd, QTYPE *queue)
  		printf("[XOFF] Buffer reached Minimum Upperlimit. Sending XOFF to transmitter...\n");
  		send_xoff = 1; send_xon = 0;
  		b[0] = sent_xonxoff = XOFF;
-
- 		if(sendto(sockfd, b, 1, 0,(struct sockaddr *) &srcAddr, srcLen) < 0)
+	 		if(sendto(sockfd, b, 1, 0,(struct sockaddr *) &srcAddr, srcLen) < 0)
  			error("ERROR: Failed to send XOFF.\n");
  	}
 
- 	return current;
+ 	return frame;
 }
 
 

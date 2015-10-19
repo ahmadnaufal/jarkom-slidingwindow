@@ -30,6 +30,9 @@
 #define WINSIZE 5 /* Window size */
 #define DATAMAX 5	/* Maximum length of data that can be sent per frame */
 
+/* Define receive buffer size */
+#define RXQSIZE 8
+
 typedef unsigned char Byte;
 
 typedef struct FRAME {
@@ -38,13 +41,13 @@ typedef struct FRAME {
  	unsigned int stx;
  	Byte *data;
  	unsigned int etx;
- 	Byte checksum;
+ 	unsigned short checksum;
 } FRAME;
 
 typedef struct ACKN {
 	unsigned int ack;
 	Byte frameno;
-	Byte checksum; 
+	unsigned short checksum; 
 } ACKN;
 
 unsigned short checksum(Byte *data, size_t bytes);

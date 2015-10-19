@@ -1,5 +1,7 @@
 /* 
- * File : dcomm.h 
+ * File 		: receiver.h
+ * Author 		: Ahmad Naufal (049) - Tifani Warnita (055) - Asanilta Fahda (079)
+ * Description	: Header for receiver
  */ 
 
 #ifndef _RECEIVER_H_ 
@@ -14,6 +16,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <string.h>
+#include "slidingwindow.h"
 
 #define MIN_UPPERLIMIT 5
 #define MAX_LOWERLIMIT 2
@@ -21,9 +24,15 @@
 #define bzero(p, size) (void)memset((p), 0 , (size))
 /* Delay to adjust speed of consuming buffer, in milliseconds */
 #define DELAY 500
-/* Define receive buffer size */
-#define RXQSIZE 8
 
+
+typedef struct QTYPE {
+ 	unsigned int count;
+ 	unsigned int front;
+ 	unsigned int rear;
+ 	unsigned int maxsize;
+ 	FRAME *data;
+} QTYPE;
 
 /* FUNCTIONS AND PROCEDURES */
 static Byte *rcvchar(int sockfd, QTYPE *queue);
