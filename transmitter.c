@@ -1,4 +1,13 @@
+<<<<<<< HEAD
+
  /* File 	: transmitter.c */
+=======
+/* 
+ * File 		: transmitter.c
+ * Author 		: Ahmad Naufal (049) - Tifani Warnita (055) - Asanilta Fahda (079)
+ * Description	: Main source code program for transmitter
+ */ 
+>>>>>>> origin/master
 #include "transmitter.h"
 
 /* NETWORKS */
@@ -11,7 +20,7 @@ int receiverAddrLen = sizeof(receiverAddr);
 FILE *tFile;			// file descriptor
 char *receiverIP;		// buffer for Host IP address
 char xbuf[1];				// buffer for receiving XON/XOFF characters
-FRAME *frameBuffer;
+FRAME *frameStorage;
 ACKN ackBuffer[WINSIZE];
 
 /* FLAGS */
@@ -52,54 +61,45 @@ int main(int argc, char *argv[]) {
 	if (pthread_create(&thread[0], NULL, childProcess, 0) != 0) 
 		error("ERROR: Failed to create thread for child. Please free some space.\n");
 	
-	// read all characters from file and put in frameBuffer
+	// read all characters from file and put in frameStorage
 	int fcount = 0;
 	int i = 0;
 	char c;
 
 	do {
 		c=fgetc(tFile);
-		if (i==DATAMAX-1) {
-			fcount++;
+		if (i==DATAMAX) {
+			frameStorage[fcount].data[i] = "\0";
 			i=0;
-			frameBuffer[fcount] = malloc(sizeof(FRAME));
-			frameBuffer[fcount].data = malloc(DATAMAX*sizeof(Byte));
-			frameBuffer[fcount].frameno = fcount%WINSIZE;
-			frameBuffer[fcount].checksum = checksum();
-			frameBuffer[fcount].soh = SOH;
-			frameBuffer[fcount].stx = STX;
-			frameBuffer[fcount].etx = ETX;		
+			fcount++;
+			frameStorage[fcount] = malloc(sizeof(FRAME));
+			frameStorage[fcount].data = malloc((DATAMAX+1)*sizeof(Byte));
+			frameStorage[fcount].frameno = fcount%BUFSIZE;
+			frameStorage[fcount].soh = SOH;
+			frameStorage[fcount].stx = STX;
+			frameStorage[fcount].etx = ETX;		
 		}
 		if (c==EOF) {
-			frameBuffer[fcount].data[i] = Endfile;
+			frameStorage[fcount].data[i] = Endfile;
+			frameStorage[fcount].data[i+1] = "\0";
 		} else {
-			frameBuffer[fcount].data[i] = c;
+			frameStorage[fcount].data[i] = c;
 			i++;
 		}
 	} while (c!=EOF);
 
 	i=0;
-	/*char tempMessage[15+DATAMAX];
-	int datalength;*/
+	int offset;
+	
 
 	while (i<=fcount) {
 		if (isXON) {
-			// convert FRAME struct to string
-			/*tempMessage[0]=frameBuffer[i].soh;
-			tempMessage[4]=frameBuffer[i].frameno;
-			tempMessage[5]=frameBuffer[i].stx;
-			tempMessage[9]=frameBuffer[i].data;
-			datalength = strlen(frameBuffer[i].data);
-			tempMessage[9+datalength]=frameBuffer[i].etx;
-			tempMessage[13+datalength]=frameBuffer[i].checksum;
+			if (sendto(sockfd, serializeFrame(i), 15+strlen(frameStorage[i].data), 0, (const struct sockaddr *) &receiverAddr, receiverAddrLen) != 15+strlen(frameStorage[i].data))
+					error("ERROR: sendto() sent buffer with size more than expected.\n");
+				
+				printf("Sending frame no. %d: %s\n", i,frameStorage[i].data);
+				i++;
 
-			if (sendto(sockfd, tempMessage, 13+datalength, 0, (const struct sockaddr *) &receiverAddr, receiverAddrLen) != 13+datalength)
-				error("ERROR: sendto() sent buffer with size more than expected.\n");*/
-			if (sendto(sockfd, frameBuffer[i], sizeof(FRAME), 0, (const struct sockaddr *) &receiverAddr, receiverAddrLen) != sizeof(FRAME))
-				error("ERROR: sendto() sent buffer with size more than expected.\n");
-			
-			printf("Sending frame no. %d: %s", i,frameBuffer[i].data);
-			i++;
 		} else {
 			while (!isXON) {
 				printf("Waiting for XON...\n");
@@ -166,4 +166,23 @@ void *childProcessACK(void *threadid) {
 	}
 
 	pthread_exit(NULL);
+}
+
+Byte* serializeFrame(int i) {
+	int offset=0;
+	Byte* serializedFrame[15+DATAMAX];
+	memcpy(serializedFrame + offset, &frameStorage[i].soh, sizeof(frameStorage[i].soh));
+	offset+=sizeof(frameStorage[i].soh);
+	memcpy(serializedFrame + offset, &frameStorage[i].frameno, sizeof(frameStorage[i].frameno));
+	offset+=sizeof(frameStorage[i].frameno);
+	memcpy(serializedFrame + offset, &frameStorage[i].stx, sizeof(frameStorage[i].stx));
+	offset+=sizeof(frameStorage[i].stx);
+	memcpy(serializedFrame + offset, frameStorage[i].data, strlen(frameStorage[i].data));
+	offset+=strlen(frameStorage[i].data);
+	memcpy(serializedFrame + offset, &frameStorage[i].etx, sizeof(frameStorage[i].etx));
+	offset+=sizeof(frameStorage[i].etx);
+	frameStorage[i].checksum = checksum(serializedFrame,offset);
+	memcpy(serializedFrame + offset, &frameStorage[i].checksum, sizeof(frameStorage[i].checksum));
+	offset+=sizeof(frameStorage[i].checksum);
+	return serializedFrame;
 }

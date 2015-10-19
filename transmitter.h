@@ -1,3 +1,9 @@
+/* 
+ * File 		: transmitter.h
+ * Author 		: Ahmad Naufal (049) - Tifani Warnita (055) - Asanilta Fahda (079)
+ * Description	: Header for transmitter
+ */ 
+
 #ifndef TRANSMITTER_H
 #define TRANSMITTER_H
 
@@ -7,6 +13,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include "slidingwindow.h"
 
 void error(const char *message);
 

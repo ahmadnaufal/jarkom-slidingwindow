@@ -1,5 +1,7 @@
 /* 
- * File : dcomm.h 
+ * File 		: receiver.h
+ * Author 		: Ahmad Naufal (049) - Tifani Warnita (055) - Asanilta Fahda (079)
+ * Description	: Header for receiver
  */ 
 
 #ifndef _RECEIVER_H_ 
@@ -14,6 +16,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <string.h>
+#include "slidingwindow.h"
 
 #define MIN_UPPERLIMIT 5
 #define MAX_LOWERLIMIT 2
@@ -28,7 +31,7 @@ typedef struct QTYPE {
  	unsigned int front;
  	unsigned int rear;
  	unsigned int maxsize;
- 	Byte *data;
+ 	FRAME *data;
 } QTYPE;
 
 /* FUNCTIONS AND PROCEDURES */

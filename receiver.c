@@ -1,4 +1,8 @@
-/* File : T1_rx.cpp */
+/* 
+ * File 		: receiver.c
+ * Author 		: Ahmad Naufal (049) - Tifani Warnita (055) - Asanilta Fahda (079)
+ * Description	: Main source code program for receiver
+ */ 
 
 #include "slidingwindow.h"
 #include "receiver.h"
@@ -101,7 +105,7 @@ static FRAME *rcvframe(int sockfd, QTYPE *queue)
  		// adding char to buffer and resync the buffer queue
  		if (queue->count < 8) {
 	 		queue->rear = (queue->count > 0) ? (queue->rear+1) % 8 : queue->rear;
-	 		queue->data[queue->rear] = *current;
+	 		queue->data[queue->rear] = frame[0];
 	 		queue->count++;
 	 	}
  	} else {
@@ -127,7 +131,7 @@ static FRAME *rcvframe(int sockfd, QTYPE *queue)
  			error("ERROR: Failed to send XOFF.\n");
  	}
 
- 	return current;
+ 	return frame;
 }
 
 
