@@ -51,9 +51,7 @@ int main(int argc, char *argv[]) {
 	if (pthread_create(&thread[0], NULL, childProcess, 0) != 0) 
 		error("ERROR: Failed to create thread for child. Please free some space.\n");
 	
-	// this is the parent process
-	// use as char transmitter from the text file
-	// connect to receiver, and read the file per character
+	// read all characters from file and put in frameBuffer
 	int fcount = 0;
 	int i = 0;
 	char c;
@@ -64,7 +62,7 @@ int main(int argc, char *argv[]) {
 			fcount++;
 			i=0;
 			frameBuffer[fcount] = malloc(sizeof(FRAME));
-			frameBuffer[fcount].data = malloc(BUFSIZE*sizeof(Byte));
+			frameBuffer[fcount].data = malloc(BUFMAX*sizeof(Byte));
 			frameBuffer[fcount].frameno = fcount%WINSIZE;
 			frameBuffer[fcount].checksum = checksum();
 			frameBuffer[fcount].soh = SOH;
@@ -82,7 +80,7 @@ int main(int argc, char *argv[]) {
 	i=0;
 	while (i<=fcount) {
 		if (isXON) {
-			if (sendto(sockfd, frameBuffer[i], sizeof(FRAME), 0, (const struct sockaddr *) &receiverAddr, receiverAddrLen) != BUFMAX)
+			if (sendto(sockfd, frameBuffer[i], sizeof(FRAME), 0, (const struct sockaddr *) &receiverAddr, receiverAddrLen) != sizeof(FRAME))
 				error("ERROR: sendto() sent buffer with size more than expected.\n");
 			
 			printf("Sending frame no. %d: %s", fcount);
@@ -121,7 +119,7 @@ void *childProcess(void *threadid) {
 	struct sockaddr_in srcAddr;
 	int srcLen = sizeof(srcAddr);
 	while (isSocketOpen) {
-		if (recvfrom(sockfd, xbuf, BUFMAX, 0, (struct sockaddr *) &srcAddr, &srcLen) != BUFMAX)
+		if (recvfrom(sockfd, xbuf, 1, 0, (struct sockaddr *) &srcAddr, &srcLen) != 1)
 			error("ERROR: recvfrom() receive buffer with size more than expected.\n");
 
 		if (xbuf[0] == XOFF) {
