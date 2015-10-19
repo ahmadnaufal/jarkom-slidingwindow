@@ -12,6 +12,7 @@ FILE *tFile;			// file descriptor
 char *receiverIP;		// buffer for Host IP address
 char xbuf[1];				// buffer for receiving XON/XOFF characters
 FRAME *frameBuffer;
+ACKN ackBuffer[WINSIZE];
 
 /* FLAGS */
 int isXON = 1;		// flag for XON/XOFF sent
@@ -58,11 +59,11 @@ int main(int argc, char *argv[]) {
 
 	do {
 		c=fgetc(tFile);
-		if (i==BUFMAX-1) {
+		if (i==DATAMAX-1) {
 			fcount++;
 			i=0;
 			frameBuffer[fcount] = malloc(sizeof(FRAME));
-			frameBuffer[fcount].data = malloc(BUFMAX*sizeof(Byte));
+			frameBuffer[fcount].data = malloc(DATAMAX*sizeof(Byte));
 			frameBuffer[fcount].frameno = fcount%WINSIZE;
 			frameBuffer[fcount].checksum = checksum();
 			frameBuffer[fcount].soh = SOH;
@@ -78,12 +79,26 @@ int main(int argc, char *argv[]) {
 	} while (c!=EOF);
 
 	i=0;
+	/*char tempMessage[15+DATAMAX];
+	int datalength;*/
+
 	while (i<=fcount) {
 		if (isXON) {
+			// convert FRAME struct to string
+			/*tempMessage[0]=frameBuffer[i].soh;
+			tempMessage[4]=frameBuffer[i].frameno;
+			tempMessage[5]=frameBuffer[i].stx;
+			tempMessage[9]=frameBuffer[i].data;
+			datalength = strlen(frameBuffer[i].data);
+			tempMessage[9+datalength]=frameBuffer[i].etx;
+			tempMessage[13+datalength]=frameBuffer[i].checksum;
+
+			if (sendto(sockfd, tempMessage, 13+datalength, 0, (const struct sockaddr *) &receiverAddr, receiverAddrLen) != 13+datalength)
+				error("ERROR: sendto() sent buffer with size more than expected.\n");*/
 			if (sendto(sockfd, frameBuffer[i], sizeof(FRAME), 0, (const struct sockaddr *) &receiverAddr, receiverAddrLen) != sizeof(FRAME))
 				error("ERROR: sendto() sent buffer with size more than expected.\n");
 			
-			printf("Sending frame no. %d: %s", fcount);
+			printf("Sending frame no. %d: %s", i,frameBuffer[i].data);
 			i++;
 		} else {
 			while (!isXON) {
@@ -113,7 +128,7 @@ void error(const char *message) {
 	exit(1);
 }
 
-void *childProcess(void *threadid) {
+void *childProcessXONXOFF(void *threadid) {
 	// child process
 	// read if there is XON/XOFF sent by receiver using recvfrom()
 	struct sockaddr_in srcAddr;
@@ -131,6 +146,23 @@ void *childProcess(void *threadid) {
 		} else {
 			printf("What the hell man?\n");
 		}
+	}
+
+	pthread_exit(NULL);
+}
+
+void *childProcessACK(void *threadid) {
+	// child process
+	// receive ACK/NAK from receiver
+	struct sockaddr_in srcAddr;
+	int srcLen = sizeof(srcAddr);
+	ACKN acktemp;
+
+	while (isSocketOpen) {
+		if (recvfrom(sockfd, acktemp, sizeof(ACKN), 0, (struct sockaddr *) &srcAddr, &srcLen) != sizeof(ACKN))
+			error("ERROR: recvfrom() receive buffer with size more than expected.\n");
+
+		ackBuffer[acktemp.frameno] = acktemp;
 	}
 
 	pthread_exit(NULL);

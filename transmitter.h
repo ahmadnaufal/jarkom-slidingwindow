@@ -8,9 +8,8 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
-#define BUFMAX 5	/* Maximum size of buffer that can be sent */
-
 void error(const char *message);
 
-void *childProcess(void *threadid);
+void *childProcessXONXOFF(void *threadid);
+void *childProcessACK(void *threadid);
 #endif
