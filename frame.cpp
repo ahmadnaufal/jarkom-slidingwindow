@@ -82,7 +82,7 @@ Byte* Frame::getSerialized() {
 
 void Frame::serialize() {
 	int offset=0;
-	Byte* serializedFrame[15+DATAMAX];
+	Byte serializedFrame[15+DATAMAX];
 	memcpy(serializedFrame + offset, &soh, sizeof(soh));
 	offset+=sizeof(soh);
 	memcpy(serializedFrame + offset, &frameno, sizeof(frameno));
@@ -96,5 +96,5 @@ void Frame::serialize() {
 	checksum = Checksum::checksum(serializedFrame,offset);
 	memcpy(serializedFrame + offset, &checksum, sizeof(checksum));
 	offset+=sizeof(checksum);
-	serialized = serializedFrame;
+	strcpy(serialized,serializedFrame);
 }

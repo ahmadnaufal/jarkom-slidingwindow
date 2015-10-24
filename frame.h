@@ -8,7 +8,7 @@ using namespace std;
 class Frame {
 public:
 	Frame();
-	Frame(int frameNo);
+	Frame(int frameNo, Byte* frameData);
 	Frame(Byte* serializedFrame);
 	Frame(const Frame& f);
 	Frame& operator= (const Frame& F);
