@@ -8,11 +8,13 @@
  #define _ACK_H_
 
  #include "slidingwindow.h"
+#include <cstring>
 
  class Ack {
  public:
  	Ack(); //Ctor
- 	Ack(unsigned int a, Byte f, unsigned short c);
+ 	Ack(Byte a, Byte f);
+ 	Ack(const char* serializedAck);
  	Ack(const Ack& a); //Cctor
  	Ack& operator=(const Ack& a); //Operator assignment
  	~Ack(); //Dtor
@@ -24,7 +26,10 @@
  private:
  	Byte ack;
 	Byte frameno;
-	unsigned short checksum; 
+	unsigned short checksum;
+	char* serialized;
+
+	void serialize();
  };
 
  #endif

@@ -1,7 +1,7 @@
 /* 
  * File 		: ack.cpp
  * Author 		: Ahmad Naufal (049) - Tifani Warnita (055) - Asanilta Fahda (079)
- * Description	: Receiver implementation
+ * Description	: Ack implementation
  */ 
 
  #include "ack.h"
@@ -14,10 +14,21 @@
  	checksum = 0;
  }
 
- Ack::Ack(Byte a, Byte f, unsigned short c) { //Ctor with param
+ Ack::Ack(Byte a, Byte f) { //Ctor with param
  	ack = a;
  	frameno = f;
- 	checksum = c;
+ 	serialize();
+ }
+
+ Ack::Ack(const char* serializedAck) {
+ 	Byte *bptr = (Byte*) serializedAck;
+    bptr++; 	// skipping through soh
+    ack = *bptr; bptr++;
+
+    frameno = *bptr; bptr++; 	// skipping through etx
+
+    unsigned short *sptr = (unsigned short*) bptr;
+    checksum = *sptr; sptr++;
  }
 
  Ack::Ack(const Ack& a) {
@@ -37,10 +48,31 @@
  }
 
 Byte Ack::getAck() {
+	return ack;
+}
 
+Byte Ack::getFrameNo() {
+	return frameno;
+}
+
+unsigned short Ack::getChecksum() {
+	return checksum;
+}
+
+void Ack::serialize() {
+	int offset=0;
+	Byte serializedAck[4];
+	memcpy(serializedAck + offset, &ack, sizeof(ack));
+	offset+=sizeof(ack);
+	memcpy(serializedAck + offset, &frameno, sizeof(frameno));
+	offset+=sizeof(frameno);
+	checksum = 1;//Checksum::checksum(serializedAck,offset);
+	memcpy(serializedAck + offset, &checksum, sizeof(checksum));
+	offset+=sizeof(checksum);
+	memcpy(serialized, serializedAck, sizeof(serializedAck));
 }
 
 int main() {
  	
- 	return 0;
+	return 0;
 }

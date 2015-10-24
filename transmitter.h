@@ -1,9 +1,15 @@
 #ifndef TRANSMITTER_H
 #define TRANSMITTER_H
 #include "slidingwindow.h"
-#include "Frame.h"
-#include "Queue.h"
+#include "frame.h"
+#include "queue.h"
+#include "ack.h"
+#include <cstdio>
 #include <cstring>
+#include <cstdlib>
+#include <netdb.h>
+#include <sys/socket.h>
+#include <pthread.h>
 
 using namespace std;
 
@@ -25,10 +31,10 @@ private:
 	int fcount;
 	//Queue slidingWindow(WINSIZE);
 
-	void initialize();
+	void initializeTransmitter();
 	void readFile();
 	void sendFrames();
-	void childProcessACK(void *threadid);
+	void* childProcessACK(void *threadid);
 	void error(const char *message);
 };
 

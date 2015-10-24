@@ -97,3 +97,7 @@ void Frame::serialize() {
 	offset+=sizeof(checksum); size = offset;
 	memcpy(serialized, serializedFrame, sizeof(serializedFrame));
 }
+
+int main() {
+	
+}

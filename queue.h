@@ -7,7 +7,7 @@
 #ifndef _QUEUE_H_
 #define _QUEUE_H_
 
-#include "Frame.h"
+#include "frame.h"
 #define MaxSizeQueue 5
 
 using namespace std;

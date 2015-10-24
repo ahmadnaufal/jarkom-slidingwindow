@@ -1,5 +1,5 @@
 
-#include "Transmitter.h"
+#include "transmitter.h"
 
 using namespace std;
 
@@ -13,7 +13,7 @@ Transmitter::Transmitter(char* IP, char* portNo, char* file) { //Ctor with param
 	tFile = fopen(file, "r");
 	if (tFile == NULL) 
 		error("ERROR: File text not Found.\n");
-	initialize();
+	initializeTransmitter();
 	readFile();
 }
 
@@ -21,7 +21,7 @@ Transmitter::~Transmitter() { //Dtor
 
 }
 
-Transmitter::initialize() {
+void Transmitter::initializeTransmitter() {
 	pthread_t thread[1];
 
 	if ((server = gethostbyname(receiverIP)) == NULL)
@@ -36,7 +36,7 @@ Transmitter::initialize() {
 	receiverAddr.sin_port = htons(port);
 }
 
-Transmitter::readFile() {
+void Transmitter::readFile() {
 	fcount = 0;
 	int i = 0;
 	char c;
@@ -46,16 +46,16 @@ Transmitter::readFile() {
 		c = fgetc(tFile);
 		
 		if (i==DATAMAX) {
-			tempdata[i] = "\0";
+			tempdata[i] = '\0';
 			i=0;
-			frameStorage[fcount] = new Frame(fcount%MAXSEQ,tempdata); 
+			frameStorage[fcount] = Frame(fcount%MAXSEQ,tempdata); 
 			fcount++;		
 		}
 
 		if (c==EOF) {
 			tempdata[i] = Endfile;
-			tempdata[i+1] = "\0";
-			frameStorage[fcount] = new Frame(fcount%MAXSEQ,tempdata);
+			tempdata[i+1] = '\0';
+			frameStorage[fcount] = Frame(fcount%MAXSEQ,tempdata);
 		} else {
 			tempdata[i] = c;
 			i++;
@@ -63,7 +63,7 @@ Transmitter::readFile() {
 	} while (c!=EOF);
 }
 
-Transmitter::sendFrames() {
+void Transmitter::sendFrames() {
 	if (pthread_create(&thread[0], NULL, childProcessACK, 0) != 0) 
 		error("ERROR: Failed to create thread for child. Please free some space.\n");
 	
@@ -87,14 +87,17 @@ void* Transmitter::childProcessACK(void *threadid) {
 	// child process
 	// receive ACK/NAK from receiver
 	struct sockaddr_in srcAddr;
-	int srcLen = sizeof(srcAddr);
-	Ack acktemp;
+	socklen_t srcLen;
+	
+	char* serializedAck;
 
 	while (isSocketOpen) {
-		if (recvfrom(sockfd, acktemp, sizeof(ACKN), 0, (struct sockaddr *) &srcAddr, &srcLen) != sizeof(ACKN))
+		if (recvfrom(sockfd, serializedAck, 4, 0, (struct sockaddr *) &srcAddr, &srcLen) != sizeof(Ack))
 			error("ERROR: recvfrom() receive buffer with size more than expected.\n");
 
-		printf("Received ACK for Frame No: %d\n",acktemp.getFrameNo());
+		Ack *ack = new Ack(serializedAck);
+
+		printf("Received ACK for Frame No: %d\n",ack->getFrameNo());
 	}
 
 	pthread_exit(NULL);
