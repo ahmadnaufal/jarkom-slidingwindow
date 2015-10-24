@@ -15,12 +15,12 @@
 unsigned short crcChecksum (Byte *data_p, unsigned short length) {
 	unsigned char i;
 	unsigned int data;
-	unsigned int remainder = 0xffff;
+	unsigned int remainder = 0xffff; // initialize remainder value (to be returned) with -1
 
 	if (length == 0)
-		return (~remainder);
+		return (~remainder); // if the length is 0 then the checksume also 0 so ~remainder will give 0
 	
-	do {
+	do { // do for each bit in the data byte, from least significant bit to most significant bit  
 		for (i=0, data=(unsigned int)0xff & *data_p++;
                  i < 8; 
                  i++, data >>= 1)
