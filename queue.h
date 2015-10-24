@@ -22,6 +22,11 @@ public:
 
 	bool isEmpty(); //Return true if the queue is empty
 	bool isFull(); //Return true if the queue is full
+
+	unsigned int getHead();
+	unsigned int getTail();
+	unsigned int getCount();
+
 	void add(Frame f); //Add element to the end of queue
 	Frame del(); //Delete element from the front of the queue
 

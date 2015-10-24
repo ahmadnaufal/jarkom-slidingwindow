@@ -60,6 +60,18 @@ bool Queue::isFull() { //Return true if the queue is full
 	return (count==maxSize);
 }
 
+unsigned int Queue::getHead() {
+	return front;
+}
+
+unsigned int Queue::getTail() {
+	return rear;
+}
+
+unsigned int Queue::getCount() {
+	return count;
+}
+
 void Queue::add(Frame f) { //Add element to the end of queue
 	data[rear] = f;
 	rear++;
