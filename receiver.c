@@ -205,17 +205,29 @@ static Byte *q_get(QTYPE *queue, Byte *data)
 
 FRAME* deserialize(char *data)
 {
-    int *q = (int*) data;    
-    msgPacket-> = *q;       q++;    
-    msgPacket->priority = *q;   q++;    
-    msgPacket->sender = *q;     q++;
+	FRAME* frame;
+    unsigned int *ptr = (unsigned int*) data;    
+    frame->stx = *ptr; ptr++;
 
-    char *p = (char*)q;
+    Byte *bptr = (Byte*) ptr;
+    frame->frameno = *bptr; bptr++;
+
+    ptr = (unsigned int*) bptr;
+    frame->stx = *ptr; ptr++;
+
+    bptr = (Byte*) ptr;
     int i = 0;
-    while (i < BUFSIZE)
-    {
-        msgPacket->message[i] = *p;
-        p++;
+    while (i < DATAMAX && *bptr != '\0') {
+        msgPacket->message[i] = *bptr;
+        bptr++;
         i++;
     }
+
+    ptr = (unsigned int*) bptr;
+    frame->etx = *ptr; ptr++;
+
+    unsigned short *checksum = (unsigned short*) ptr;
+    frame->checksum = *checksum; checksum++;
+
+    return frame;
 }
