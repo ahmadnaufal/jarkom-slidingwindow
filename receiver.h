@@ -30,10 +30,8 @@ using namespace std;
 
 class Receiver {
 public:
-	Receiver(); //Ctor
-	Receiver(const Receiver &r); //Cctor
-	Receiver& operator=(const Receiver& r); //Operator assignment
-	~Receiver(); //Dtor
+	Receiver(char* _port); //Ctor
+	void bind()
 
 	static Byte *rcvchar(int sockfd, QTYPE *queue);
 	static Byte *q_get(QTYPE *, Byte *);
@@ -42,7 +40,17 @@ public:
 	void sendingAck();
 	
 private:
+	int port;
 	Queue frameEater;
+
+	Byte sent_xonxoff;
+	unsigned send_xon = 0, send_xoff = 0;
+	int endFileReceived;
+
+	/* Socket */
+	int sockfd; // listen on sock_fd
+	struct sockaddr_in adhost;
+	struct sockaddr_in srcAddr;
 };
 
 #endif
