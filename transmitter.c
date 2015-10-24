@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
 	char c;
 
 	do {
-		c=fgetc(tFile);
+		c = fgetc(tFile);
 		if (i==DATAMAX) {
 			frameStorage[fcount].data[i] = "\0";
 			i=0;
@@ -171,6 +171,7 @@ void *childProcessACK(void *threadid) {
 Byte* serializeFrame(int i) {
 	int offset=0;
 	Byte* serializedFrame[15+DATAMAX];
+	
 	memcpy(serializedFrame + offset, &frameStorage[i].soh, sizeof(frameStorage[i].soh));
 	offset+=sizeof(frameStorage[i].soh);
 	memcpy(serializedFrame + offset, &frameStorage[i].frameno, sizeof(frameStorage[i].frameno));
