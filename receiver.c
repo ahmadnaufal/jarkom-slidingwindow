@@ -83,8 +83,10 @@ static FRAME *rcvframe(int sockfd, QTYPE *queue)
  	char b[1];
  	static int counter = 1;
 
- 	if (recvfrom(sockfd, frame, &frame_size, 0, (struct sockaddr *) &srcAddr, &srcLen) < 0)
+ 	if (recvfrom(sockfd, current, &cur_size, 0, (struct sockaddr *) &srcAddr, &srcLen) < 0)
  		error("ERROR: Failed to receive character from socket\n");
+
+ 	frame = deserialize(current, cur_size);
 
  	printf("Receiving frame no. %d: %s", frame[0].frameno, frame[0].data);
 
@@ -108,6 +110,7 @@ static FRAME *rcvframe(int sockfd, QTYPE *queue)
 	 		queue->data[queue->rear] = frame[0];
 	 		queue->count++;
 	 	}
+
  	} else {
  		printf("[NAK] Package %d error or corrupt. Sending NAK %d...\n", frame[0].frameno, frame[0].frameno);
  		ACKN *nak = {NAK, frame[0].frameno, 0};
@@ -198,4 +201,21 @@ static Byte *q_get(QTYPE *queue, Byte *data)
 
  	// return the Byte consumed
  	return current;
+}
+
+FRAME* deserialize(char *data)
+{
+    int *q = (int*) data;    
+    msgPacket-> = *q;       q++;    
+    msgPacket->priority = *q;   q++;    
+    msgPacket->sender = *q;     q++;
+
+    char *p = (char*)q;
+    int i = 0;
+    while (i < BUFSIZE)
+    {
+        msgPacket->message[i] = *p;
+        p++;
+        i++;
+    }
 }
