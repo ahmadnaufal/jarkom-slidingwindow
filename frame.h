@@ -8,24 +8,27 @@ using namespace std;
 class Frame {
 public:
 	Frame();
-	Frame(int frameNo, Byte* frameData);
-	Frame(Byte* serializedFrame);
+	Frame(int frameNo, char* frameData);
+	Frame(const char* serializedFrame);
 	Frame(const Frame& f);
 	Frame& operator= (const Frame& F);
 	~Frame();
 	Byte getNo();
-	Byte* getData();
+	char* getData();
 	unsigned short getChecksum();
-	Byte* getSerialized();
+	char* getSerialized();
+	int getSize();
 
 private:
 	Byte no;
-	Byte* data;
+	char* data;
 	unsigned short checksum;
-	Byte* serialized;
+	char* serialized;
 	const unsigned int soh = SOH;
 	const unsigned int stx = STX;
-	const unsigned int etx = ETX; 
+	const unsigned int etx = ETX;
+	int size;
+
 	void serialize();
 };
 

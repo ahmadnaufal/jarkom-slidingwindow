@@ -11,7 +11,7 @@ using namespace std;
 Receiver::Receiver(char* _port) { //Ctor
 	port = atoi(_port);
 
-	printf("Creating socket to self in Port %s...\n", argv[1]);
+	printf("Creating socket to self in Port %s...\n", port);
  	if ((sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
  		error("ERROR: Create socket failed.\n");
 

@@ -8,24 +8,24 @@ Frame::Frame() {
 }
 
 //ctor with frameNo & frameData
-Frame::Frame(int frameNo, Byte* frameData) {
+Frame::Frame(int frameNo, char* frameData) {
 	no = frameNo;
 	data = frameData;
 	serialize();
 }
 
 //ctor with serializedFrame
-Frame::Frame(const Byte* serializedFrame) {
+Frame::Frame(const char* serializedFrame) {
     unsigned int *ptr = (unsigned int*) data;    
-    stx = *ptr; ptr++;
+    ptr++;
 
-    Byte *bptr = (Byte*) ptr;
+    char *bptr = (char*) ptr;
     no = *bptr; bptr++;
 
     ptr = (unsigned int*) bptr;
-    stx = *ptr; ptr++;
+    ptr++;
 
-    bptr = (Byte*) ptr;
+    bptr = (char*) ptr;
     int i = 0;
     while (i < DATAMAX && *bptr != '\0') {
         data[i] = *bptr;
@@ -34,7 +34,7 @@ Frame::Frame(const Byte* serializedFrame) {
     }
 
     ptr = (unsigned int*) bptr;
-    etx = *ptr; ptr++;
+    ptr++;
 
     unsigned short *sptr = (unsigned short*) ptr;
     checksum = *sptr; sptr++;
@@ -43,8 +43,8 @@ Frame::Frame(const Byte* serializedFrame) {
 //cctor
 Frame::Frame(const Frame& f) {
 	no = f.no;
-	strcpy(data, f.data);
-	strcpy(serialized, f.serialized);
+	memcpy(data, f.data, sizeof(f.data));
+	memcpy(serialized, f.serialized, sizeof(f.serialized));
 	checksum = f.checksum;
 
 }
@@ -53,8 +53,8 @@ Frame::Frame(const Frame& f) {
 Frame& Frame::operator=(const Frame& f) {
 	no = f.no;
 	delete [] data;
-	strcpy(data, f.data);
-	strcpy(serialized, f.serialized);
+	memcpy(data, f.data, sizeof(f.data));
+	memcpy(serialized, f.serialized, sizeof(f.serialized));
 	checksum = f.checksum;
 	return *this;
 }
@@ -68,7 +68,7 @@ Byte Frame::getNo() {
 	return no;
 }
 
-Byte* Frame::getData() {
+char* Frame::getData() {
 	return data;
 }
 
@@ -76,8 +76,12 @@ unsigned short Frame::getChecksum() {
 	return checksum;
 }
 
-Byte* Frame::getSerialized() {
+char* Frame::getSerialized() {
 	return serialized;
+}
+
+int Frame::getSize() {
+	return size;
 }
 
 void Frame::serialize() {
@@ -85,7 +89,7 @@ void Frame::serialize() {
 	Byte serializedFrame[15+DATAMAX];
 	memcpy(serializedFrame + offset, &soh, sizeof(soh));
 	offset+=sizeof(soh);
-	memcpy(serializedFrame + offset, &frameno, sizeof(frameno));
+	memcpy(serializedFrame + offset, &no, sizeof(no));
 	offset+=sizeof(no);
 	memcpy(serializedFrame + offset, &stx, sizeof(stx));
 	offset+=sizeof(stx);
@@ -93,8 +97,8 @@ void Frame::serialize() {
 	offset+=strlen(data);
 	memcpy(serializedFrame + offset, &etx, sizeof(etx));
 	offset+=sizeof(etx);
-	checksum = Checksum::checksum(serializedFrame,offset);
+	checksum = 1;//Checksum::checksum(serializedFrame,offset);
 	memcpy(serializedFrame + offset, &checksum, sizeof(checksum));
-	offset+=sizeof(checksum);
-	strcpy(serialized,serializedFrame);
+	offset+=sizeof(checksum); size = offset;
+	memcpy(serialized, serializedFrame, sizeof(serializedFrame));
 }

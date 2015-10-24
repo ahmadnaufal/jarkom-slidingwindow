@@ -50,6 +50,4 @@ typedef struct ACKN {
 	unsigned short checksum; 
 } ACKN;
 
-unsigned short checksum(Byte *data, size_t bytes);
-
 #endif
