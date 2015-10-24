@@ -1,13 +1,8 @@
-<<<<<<< HEAD
-
- /* File 	: transmitter.c */
-=======
 /* 
  * File 		: transmitter.c
  * Author 		: Ahmad Naufal (049) - Tifani Warnita (055) - Asanilta Fahda (079)
  * Description	: Main source code program for transmitter
  */ 
->>>>>>> origin/master
 #include "transmitter.h"
 
 /* NETWORKS */
