@@ -7,6 +7,7 @@
 #ifndef _RECEIVER_H_ 
 #define _RECEIVER_H_ 
 
+#include "queue.h"
 #include <stdio.h>
 #include <pthread.h>
 #include <stdlib.h>
@@ -25,22 +26,23 @@
 /* Delay to adjust speed of consuming buffer, in milliseconds */
 #define DELAY 500
 
+using namespace std;
 
-typedef struct QTYPE {
- 	unsigned int count;
- 	unsigned int front;
- 	unsigned int rear;
- 	unsigned int maxsize;
- 	FRAME *data;
-} QTYPE;
+class Receiver {
+public:
+	Receiver(); //Ctor
+	Receiver(const Receiver &r); //Cctor
+	Receiver& operator=(const Receiver& r); //Operator assignment
+	~Receiver(); //Dtor
 
-/* FUNCTIONS AND PROCEDURES */
-static Byte *rcvchar(int sockfd, QTYPE *queue);
-
-static Byte *q_get(QTYPE *, Byte *);
-
-void *childRProcess(void * threadid);
-
-void error(const char* message);
+	static Byte *rcvchar(int sockfd, QTYPE *queue);
+	static Byte *q_get(QTYPE *, Byte *);
+	void *childRProcess(void * threadid);
+	void error(const char* message);
+	void sendingAck();
+	
+private:
+	Queue frameEater;
+};
 
 #endif
