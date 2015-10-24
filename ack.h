@@ -17,8 +17,12 @@
  	Ack& operator=(const Ack& a); //Operator assignment
  	~Ack(); //Dtor
 
+ 	Byte getAck();			// get ack type if ACK/NAK
+ 	Byte getFrameNo();			// get ack frame number
+ 	unsigned short getChecksum();	// get checksum of the ack
+
  private:
- 	unsigned int ack;
+ 	Byte ack;
 	Byte frameno;
 	unsigned short checksum; 
  };

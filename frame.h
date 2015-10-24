@@ -8,7 +8,7 @@ using namespace std;
 class Frame {
 public:
 	Frame();
-	Frame(int frameNo, char* frameData);
+	Frame(Byte frameNo, char* frameData);
 	Frame(const char* serializedFrame);
 	Frame(const Frame& f);
 	Frame& operator= (const Frame& F);
@@ -24,9 +24,9 @@ private:
 	char* data;
 	unsigned short checksum;
 	char* serialized;
-	const unsigned int soh = SOH;
-	const unsigned int stx = STX;
-	const unsigned int etx = ETX;
+	const Byte soh = SOH;
+	const Byte stx = STX;
+	const Byte etx = ETX;
 	int size;
 
 	void serialize();

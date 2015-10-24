@@ -1,5 +1,5 @@
 /* 
- * File 		: ask.cpp
+ * File 		: ack.cpp
  * Author 		: Ahmad Naufal (049) - Tifani Warnita (055) - Asanilta Fahda (079)
  * Description	: Receiver implementation
  */ 
@@ -14,7 +14,7 @@
  	checksum = 0;
  }
 
- Ack::Ack(unsigned int a, Byte f, unsigned short c) { //Ctor with param
+ Ack::Ack(Byte a, Byte f, unsigned short c) { //Ctor with param
  	ack = a;
  	frameno = f;
  	checksum = c;
@@ -36,7 +36,11 @@
  Ack::~Ack() { //Dtor
  }
 
- int main() {
+Byte Ack::getAck() {
+
+}
+
+int main() {
  	
  	return 0;
- }
+}

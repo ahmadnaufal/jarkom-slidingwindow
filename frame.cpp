@@ -8,7 +8,7 @@ Frame::Frame() {
 }
 
 //ctor with frameNo & frameData
-Frame::Frame(int frameNo, char* frameData) {
+Frame::Frame(Byte frameNo, char* frameData) {
 	no = frameNo;
 	data = frameData;
 	serialize();
@@ -16,27 +16,22 @@ Frame::Frame(int frameNo, char* frameData) {
 
 //ctor with serializedFrame
 Frame::Frame(const char* serializedFrame) {
-    unsigned int *ptr = (unsigned int*) data;    
-    ptr++;
+    char *bptr = (char*) serializedFrame;
+    bptr++; 	// skipping through soh
+    no = *bptr;
 
-    char *bptr = (char*) ptr;
-    no = *bptr; bptr++;
+    bptr += 2;	// skipping through stx
 
-    ptr = (unsigned int*) bptr;
-    ptr++;
-
-    bptr = (char*) ptr;
     int i = 0;
-    while (i < DATAMAX && *bptr != '\0') {
+    while (i < DATAMAX && *bptr != etx) {
         data[i] = *bptr;
         bptr++;
         i++;
     }
 
-    ptr = (unsigned int*) bptr;
-    ptr++;
+    bptr++; 	// skipping through etx
 
-    unsigned short *sptr = (unsigned short*) ptr;
+    unsigned short *sptr = (unsigned short*) bptr;
     checksum = *sptr; sptr++;
 }
 
