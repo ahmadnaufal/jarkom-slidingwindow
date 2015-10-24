@@ -30,4 +30,6 @@ private:
  	unsigned int rear;
  	unsigned int maxSize;
  	Frame *data;
-}
+};
+
+#endif
