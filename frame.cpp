@@ -2,6 +2,11 @@
 
 using namespace std;
 
+//const member
+Byte Frame::soh = SOH;
+Byte Frame::stx = STX;
+Byte Frame::etx = ETX;
+
 //ctor
 Frame::Frame() {
 
