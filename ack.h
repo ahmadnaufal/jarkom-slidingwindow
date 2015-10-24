@@ -22,6 +22,8 @@
  	Byte getAck();			// get ack type if ACK/NAK
  	Byte getFrameNo();			// get ack frame number
  	unsigned short getChecksum();	// get checksum of the ack
+ 	char* getSerialized();	// get serialized struct
+ 	int getSerializedSize();	// get length of serialized struct
 
  private:
  	Byte ack;

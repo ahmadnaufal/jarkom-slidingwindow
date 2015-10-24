@@ -30,18 +30,14 @@ using namespace std;
 
 class Receiver {
 public:
-	Receiver(char* _port); //Ctor
-	void bind()
+	Receiver();
+	Receiver(char* _portNo); //Ctor
+	~Receiver();
 
-	static Byte *rcvchar(int sockfd, QTYPE *queue);
-	static Byte *q_get(QTYPE *, Byte *);
-	void *childRProcess(void * threadid);
-	void error(const char* message);
-	void sendingAck();
-	
 private:
 	int port;
-	Queue frameEater;
+	Queue *frameEater;
+	pthread_t thread[1];
 
 	Byte sent_xonxoff;
 	unsigned send_xon = 0, send_xoff = 0;
@@ -50,7 +46,15 @@ private:
 	/* Socket */
 	int sockfd; // listen on sock_fd
 	struct sockaddr_in adhost;
-	struct sockaddr_in srcAddr;
+
+	void initializeReceiver();
+	void receiveFrames();
+	static Byte *rcvframe();
+	static Byte *q_get(QTYPE *, Byte *);
+	void *childRProcess(void * threadid);
+	void error(const char* message);
+	void sendingAck();
+	
 };
 
 #endif
