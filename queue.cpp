@@ -72,6 +72,10 @@ unsigned int Queue::getCount() {
 	return count;
 }
 
+Frame Queue::getElement(int x) {
+	return data[x];
+}
+
 void Queue::add(Frame f) { //Add element to the end of queue
 	data[rear] = f;
 	rear++;
@@ -86,4 +90,8 @@ Frame Queue::del() { //Delete element from the front of the queue
 	front %= maxSize;
 	count--;
 	return f;
+}
+
+int main() {
+	return 0;
 }

@@ -26,6 +26,7 @@ public:
 	unsigned int getHead();
 	unsigned int getTail();
 	unsigned int getCount();
+	Frame getElement(int x);
 
 	void add(Frame f); //Add element to the end of queue
 	Frame del(); //Delete element from the front of the queue
