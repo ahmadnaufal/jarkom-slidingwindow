@@ -1,7 +1,7 @@
 /* 
- * File 		: queue.h
+ * File 		: queue.cpp
  * Author 		: Ahmad Naufal (049) - Tifani Warnita (055) - Asanilta Fahda (079)
- * Description	: Header of queue
+ * Description	: Queue implementation
  */ 
 
 #include "queue.h"
@@ -13,6 +13,14 @@ Queue::Queue() { //Ctor
 	front = 0;
 	rear = 0;
 	maxSize = MaxSizeQueue;
+	data = new Frame[maxSize];
+}
+
+Queue::Queue(int size) { //Ctor with param
+	count = 0;
+	front = 0;
+	rear = 0;
+	maxSize = size;
 	data = new Frame[maxSize];
 }
 
@@ -49,20 +57,25 @@ bool Queue::isEmpty() { //Return true if the queue is empty
 }
 
 bool Queue::isFull() { //Return true if the queue is full
-	return (count==maxSize)
+	return (count==maxSize);
 }
 
-void Queue::add(Frame f) {
+void Queue::add(Frame f) { //Add element to the end of queue
 	data[rear] = f;
 	rear++;
 	rear %= maxSize;
 	count++;
 }
 
-Frame Queue::del() {
-	frame f = data[front];
+Frame Queue::del() { //Delete element from the front of the queue
+
+	Frame f = data[front];
 	front++;
 	front %= maxSize;
-	count--
+	count--;
 	return f;
+}
+
+int main() {
+	return 0;
 }

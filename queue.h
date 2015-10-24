@@ -15,6 +15,7 @@ using namespace std;
 class Queue {
 public:
 	Queue(); //Ctor
+	Queue(int size); //Ctor with param
 	Queue(const Queue& q); //Cctor
 	Queue& operator=(const Queue& q); //Operator assignment
 	~Queue(); //Dtor
