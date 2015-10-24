@@ -25,9 +25,8 @@
 #define XOFF (0x13) 
 
 /* Const */ 
-#define BYTESIZE 256 /* The maximum value of a byte */
-#define MAXLEN 1024 /* Maximum messages length */ 
 #define WINSIZE 5 /* Window size */
+#define MAXSEQ (WINSIZE*2) /*Max sequence number*/ 
 #define DATAMAX 5	/* Maximum length of data that can be sent per frame */
 
 /* Define receive buffer size */

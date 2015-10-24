@@ -1,22 +1,35 @@
-/* 
- * File 		: transmitter.h
- * Author 		: Ahmad Naufal (049) - Tifani Warnita (055) - Asanilta Fahda (079)
- * Description	: Header for transmitter
- */ 
-
 #ifndef TRANSMITTER_H
 #define TRANSMITTER_H
-
-#include <stdio.h>
-#include <pthread.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
 #include "slidingwindow.h"
+#include "Frame.h"
+#include "Queue.h"
+#include <cstring>
 
-void error(const char *message);
+using namespace std;
 
-void *childProcessXONXOFF(void *threadid);
-void *childProcessACK(void *threadid);
+class Transmitter {
+public:
+	Transmitter();
+	Transmitter(char* IP, char* portNo, char* file);
+	~Transmitter();
+
+private:
+	char *receiverIP;
+	FILE *tFile;
+	int port;
+	int sockfd;
+	struct hostent *server;
+	struct sockaddr_in receiverAddr;
+	bool isSocketOpen;	
+	Frame *frameStorage;
+	int fcount;
+	//Queue slidingWindow(WINSIZE);
+
+	void initialize();
+	void readFile();
+	void sendFrames();
+	void childProcessACK(void *threadid);
+	void error(const char *message);
+};
+
 #endif
