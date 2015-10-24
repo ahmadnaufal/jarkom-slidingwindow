@@ -91,7 +91,3 @@ Frame Queue::del() { //Delete element from the front of the queue
 	count--;
 	return f;
 }
-
-int main() {
-	return 0;
-}

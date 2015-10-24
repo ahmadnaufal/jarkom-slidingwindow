@@ -7,16 +7,17 @@
 #ifndef TRANSMITTER_H
 #define TRANSMITTER_H
 
-#include "slidingwindow.h"
+#include "ack.h"
 #include "frame.h"
 #include "queue.h"
-#include "ack.h"
+#include "slidingwindow.h"
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <netdb.h>
 #include <sys/socket.h>
 #include <pthread.h>
+#include <unistd.h>
 
 using namespace std;
 
@@ -32,11 +33,14 @@ private:
 	int port;
 	static int sockfd;
 	struct hostent *server;
-	struct sockaddr_in receiverAddr;
+	static struct sockaddr_in receiverAddr;
 	static bool isSocketOpen;	
 	Frame *frameStorage;
 	int fcount;
 	pthread_t thread[1];
+	static Queue window;
+	static int *timeout;
+	static bool *isAck;
 	//Queue slidingWindow(WINSIZE);
 
 	void initializeTransmitter();
@@ -44,6 +48,7 @@ private:
 	void sendFrames();
 	static void* childProcessACK(void *threadid);
 	static void error(const char *message);
+	static void initTimeoutAck();
 };
 
 #endif
