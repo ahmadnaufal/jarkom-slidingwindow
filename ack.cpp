@@ -71,8 +71,3 @@ void Ack::serialize() {
 	offset+=sizeof(checksum);
 	memcpy(serialized, serializedAck, sizeof(serializedAck));
 }
-
-int main() {
- 	
-	return 0;
-}

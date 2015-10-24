@@ -3,6 +3,10 @@
 
 using namespace std;
 
+//Initialize the static member
+int Transmitter::sockfd = 0;
+bool Transmitter::isSocketOpen = false;
+
 Transmitter::Transmitter() { //Ctor
 
 }
@@ -22,13 +26,11 @@ Transmitter::~Transmitter() { //Dtor
 }
 
 void Transmitter::initializeTransmitter() {
-	pthread_t thread[1];
-
 	if ((server = gethostbyname(receiverIP)) == NULL)
 		error("ERROR: Receiver Address is Unknown or Wrong.\n");
-	if ((sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
+	if ((Transmitter::sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
 		error("ERROR: Create socket failed.\n");
-	isSocketOpen = true;
+	Transmitter::isSocketOpen = true;
 
 	memset(&receiverAddr, 0, sizeof(receiverAddr));
 	receiverAddr.sin_family = AF_INET;
@@ -64,13 +66,13 @@ void Transmitter::readFile() {
 }
 
 void Transmitter::sendFrames() {
-	if (pthread_create(&thread[0], NULL, childProcessACK, 0) != 0) 
+	if (pthread_create(&thread[0], NULL, &childProcessACK, 0) != 0) 
 		error("ERROR: Failed to create thread for child. Please free some space.\n");
 	
 	int i = 0;
 
 	while (i<=fcount) {
-		if (sendto(sockfd, frameStorage[i].getSerialized(), frameStorage[i].getSize(), 0, (const struct sockaddr *) &receiverAddr, sizeof(receiverAddr)) != frameStorage[i].getSize())
+		if (sendto(Transmitter::sockfd, frameStorage[i].getSerialized(), frameStorage[i].getSize(), 0, (const struct sockaddr *) &receiverAddr, sizeof(receiverAddr)) != frameStorage[i].getSize())
 			error("ERROR: sendto() sent buffer with size more than expected.\n");
 				
 		printf("Sending frame no. %d: %s\n", frameStorage[i].getNo(),frameStorage[i].getData());
@@ -91,8 +93,8 @@ void* Transmitter::childProcessACK(void *threadid) {
 	
 	char* serializedAck;
 
-	while (isSocketOpen) {
-		if (recvfrom(sockfd, serializedAck, 4, 0, (struct sockaddr *) &srcAddr, &srcLen) != sizeof(Ack))
+	while (Transmitter::isSocketOpen) {
+		if (recvfrom(Transmitter::sockfd, serializedAck, 4, 0, (struct sockaddr *) &srcAddr, &srcLen) != sizeof(Ack))
 			error("ERROR: recvfrom() receive buffer with size more than expected.\n");
 
 		Ack *ack = new Ack(serializedAck);

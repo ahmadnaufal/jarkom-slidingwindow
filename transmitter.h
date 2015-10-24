@@ -1,12 +1,19 @@
+/* 
+ * File 		: transmitter.h
+ * Author 		: Ahmad Naufal (049) - Tifani Warnita (055) - Asanilta Fahda (079)
+ * Description	: Header of transmitter
+ */ 
+
 #ifndef TRANSMITTER_H
 #define TRANSMITTER_H
+
 #include "slidingwindow.h"
 #include "frame.h"
 #include "queue.h"
 #include "ack.h"
 #include <cstdio>
-#include <cstring>
 #include <cstdlib>
+#include <cstring>
 #include <netdb.h>
 #include <sys/socket.h>
 #include <pthread.h>
@@ -23,19 +30,20 @@ private:
 	char *receiverIP;
 	FILE *tFile;
 	int port;
-	int sockfd;
+	static int sockfd;
 	struct hostent *server;
 	struct sockaddr_in receiverAddr;
-	bool isSocketOpen;	
+	static bool isSocketOpen;	
 	Frame *frameStorage;
 	int fcount;
+	pthread_t thread[1];
 	//Queue slidingWindow(WINSIZE);
 
 	void initializeTransmitter();
 	void readFile();
 	void sendFrames();
-	void* childProcessACK(void *threadid);
-	void error(const char *message);
+	static void* childProcessACK(void *threadid);
+	static void error(const char *message);
 };
 
 #endif
