@@ -24,9 +24,9 @@ private:
 	char* data;
 	unsigned short checksum;
 	char* serialized;
-	const Byte soh = SOH;
-	const Byte stx = STX;
-	const Byte etx = ETX;
+	const Byte soh;
+	const Byte stx;
+	const Byte etx;
 	int size;
 
 	void serialize();
