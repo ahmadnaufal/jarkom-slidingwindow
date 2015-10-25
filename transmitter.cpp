@@ -182,17 +182,18 @@ void Transmitter::childProcessACK() {
 			else
 				i++;
 		}
-
-		if (ack->getAck()==ACK) {
-			printf("Received ACK for Frame No: %d\n",ack->getFrameNo());
-			window.setAckTrue((window.getFrameBuffer().getHead()+i)%WINSIZE);
-			received++;
-		} else if (ack->getAck()==NAK) {
-			printf("Received NAK for Frame No: %d\n",ack->getFrameNo());
-			if (sendto(sockfd, window.getFrameBuffer().getElement(i).getSerialized(), window.getFrameBuffer().getElement(i).getSize(), 0, (const struct sockaddr *) &receiverAddr, sizeof(receiverAddr)) != window.getFrameBuffer().getElement(i).getSize())
-					error("ERROR: sendto() sent buffer with size more than expected.\n");
-			printf("Sending frame no. %d: %s\n", window.getFrameBuffer().getElement(i).getNo(), window.getFrameBuffer().getElement(i).getData());
-			window.setTimeOut(i);
-		} 		
+		if (i<WINSIZE) {
+			if (ack->getAck()==ACK) {
+				printf("Received ACK for Frame No: %d\n",ack->getFrameNo());
+				window.setAckTrue((window.getFrameBuffer().getHead()+i)%WINSIZE);
+				received++;
+			} else if (ack->getAck()==NAK) {
+				printf("Received NAK for Frame No: %d\n",ack->getFrameNo());
+				if (sendto(sockfd, window.getFrameBuffer().getElement(i).getSerialized(), window.getFrameBuffer().getElement(i).getSize(), 0, (const struct sockaddr *) &receiverAddr, sizeof(receiverAddr)) != window.getFrameBuffer().getElement(i).getSize())
+						error("ERROR: sendto() sent buffer with size more than expected.\n");
+				printf("Sending frame no. %d: %s\n", window.getFrameBuffer().getElement(i).getNo(), window.getFrameBuffer().getElement(i).getData());
+				window.setTimeOut(i);
+			} 	
+		}	
 	}
 }
