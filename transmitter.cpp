@@ -36,9 +36,7 @@ Transmitter::Transmitter(char* IP, char* portNo, char* file) { //Ctor with param
 }
 
 Transmitter::~Transmitter() { //Dtor
-	delete [] receiverIP;
-	fclose(tFile);
-	delete [] frameStorage;
+	
 }
 
 void Transmitter::initializeTransmitter() {
@@ -183,8 +181,10 @@ void* Transmitter::childProcessACK(void *threadid) {
 
 int main(int argc, char const *argv[])
 {
-	char *params[] = {"localhost", "8072", "hello.txt"};
+	char ip[] = "localhost";
+	char port[] = "8072";
+	char file[] = "hello.txt";
 	/* code */
-	Transmitter t(params[0], params[1], params[2]);
+	Transmitter t(ip, port, file);
 	return 0;
 }
