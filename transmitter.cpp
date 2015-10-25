@@ -24,17 +24,21 @@ Transmitter::Transmitter() { //Ctor
 
 Transmitter::Transmitter(char* IP, char* portNo, char* file) { //Ctor with param
 	receiverIP = IP;
+	frameStorage = new Frame[50];
 	port = atoi(portNo);
+
 	tFile = fopen(file, "r");
-	frameStorage = new Frame[100];
 	if (tFile == NULL) 
 		error("ERROR: File text not Found.\n");
+
 	initializeTransmitter();
 	readFile();
 }
 
 Transmitter::~Transmitter() { //Dtor
-
+	delete [] receiverIP;
+	fclose(tFile);
+	delete [] frameStorage;
 }
 
 void Transmitter::initializeTransmitter() {
@@ -56,7 +60,7 @@ void Transmitter::readFile() {
 	int i = 0;
 
 	char c;
-	char* tempdata;
+	char* tempdata = new char[DATAMAX+1];
 
 	do {
 		c = fgetc(tFile);
@@ -65,18 +69,18 @@ void Transmitter::readFile() {
 			tempdata[i] = '\0';
 			i=0;
 			cout << "ini tempdata " << tempdata << endl;
-			//frameStorage[fcount] = Frame(fcount%MAXSEQ,tempdata); 
-			fcount++;
+			Frame temp(fcount%MAXSEQ,tempdata);
+			frameStorage[fcount++] = temp; 
 			cout << "berhasil bikin" << endl;		
 		}
 
 		if (c==EOF) {
 			tempdata[i] = Endfile;
 			tempdata[i+1] = '\0';
-			//frameStorage[fcount] = Frame(fcount%MAXSEQ,tempdata);
+			Frame temp(fcount%MAXSEQ,tempdata);
+			frameStorage[fcount] = temp; 
 		} else {
-			tempdata[i] = c;
-			i++;
+			tempdata[i++] = c;
 		}
 		cout << i << " " << tempdata[i-1] << endl;
 	} while (c!=EOF);
@@ -133,6 +137,10 @@ void Transmitter::sendFrames() {
 			}
 		}
 	}
+
+	pthread_join(thread[0], NULL);
+	close(Transmitter::sockfd);
+	isSocketOpen = false;
 }
 
 void Transmitter::error(const char *message) {
@@ -171,4 +179,12 @@ void* Transmitter::childProcessACK(void *threadid) {
 	}
 
 	pthread_exit(NULL);
+}
+
+int main(int argc, char const *argv[])
+{
+	char *params[] = {"localhost", "8072", "hello.txt"};
+	/* code */
+	Transmitter t(params[0], params[1], params[2]);
+	return 0;
 }

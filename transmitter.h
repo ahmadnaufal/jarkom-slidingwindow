@@ -10,7 +10,6 @@
 #include "ack.h"
 #include "frame.h"
 #include "queue.h"
-#include "slidingwindow.h"
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -19,8 +18,6 @@
 #include <pthread.h>
 #include <unistd.h>
 
-using namespace std;
-
 class Transmitter {
 public:
 	Transmitter();
@@ -28,13 +25,17 @@ public:
 	~Transmitter();
 
 private:
+	// transmitter execution parameters
 	char *receiverIP;
 	FILE *tFile;
 	int port;
+
+	// socket attribute
 	static int sockfd;
 	struct hostent *server;
 	static struct sockaddr_in receiverAddr;
 	static bool isSocketOpen;	
+
 	Frame *frameStorage;
 	int fcount;
 	pthread_t thread[1];

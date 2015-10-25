@@ -53,6 +53,10 @@ Frame::Frame(const Frame& f) {
 Frame& Frame::operator=(const Frame& f) {
 	no = f.no;
 	delete [] data;
+	delete [] serialized;
+
+	data = new char[ sizeof(f.data) ];
+	serialized = new char [ sizeof(f.serialized) ];
 	memcpy(data, f.data, sizeof(f.data));
 	memcpy(serialized, f.serialized, sizeof(f.serialized));
 	checksum = f.checksum;
