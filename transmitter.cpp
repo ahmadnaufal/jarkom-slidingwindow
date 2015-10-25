@@ -123,7 +123,7 @@ void Transmitter::sendFrames() {
 		cout << "i: " << i << " received:" << received << " fcount:" << fcount << endl;
 		for(int x=0; x<window.getFrameBuffer().getCount(); x++) {
 			int a = (x+window.getFrameBuffer().getHead())%WINSIZE; // Ini ga efektif banget maaf ya
-			if(window.getTimeOut(a) == 0) {
+			if(window.getTimeOut(a) == 0 && !window.getIsAck(a)) {
 				/*cout << "Mencoba mengirim: " << window.getFrameBuffer().getElement(a).getData() << endl;
 				cout << "Yang mau dikirim " << window.getFrameBuffer().getElement(a).getSerialized() << endl;
 				cout << "Size: " << window.getFrameBuffer().getElement(a).getSize() << endl;
