@@ -36,7 +36,6 @@ Transmitter::Transmitter(char* IP, char* portNo, char* file) { //Ctor with param
 }
 
 Transmitter::~Transmitter() { //Dtor
-	
 }
 
 void Transmitter::initializeTransmitter() {
