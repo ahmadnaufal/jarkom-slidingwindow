@@ -10,12 +10,13 @@
 #include "ack.h"
 #include "frame.h"
 #include "queue.h"
+#include "window.h"
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <netdb.h>
 #include <sys/socket.h>
-#include <pthread.h>
+#include <thread>
 #include <unistd.h>
 
 class Transmitter {
@@ -31,25 +32,23 @@ private:
 	int port;
 
 	// socket attribute
-	static int sockfd;
+	int sockfd;
 	struct hostent *server;
-	static struct sockaddr_in receiverAddr;
-	static bool isSocketOpen;	
+	struct sockaddr_in receiverAddr;
+	bool isSocketOpen;	
 
 	Frame *frameStorage;
 	int fcount;
 	pthread_t thread[1];
-	static Queue window;
-	static int *timeout;
-	static bool *isAck;
+	Window window;
 	//Queue slidingWindow(WINSIZE);
 
 	void initializeTransmitter();
 	void readFile();
 	void sendFrames();
-	static void* childProcessACK(void *threadid);
-	static void error(const char *message);
-	static void initTimeoutAck();
+	void childProcessACK();
+	void error(const char *message);
+	void initTimeoutAck();
 };
 
 #endif
