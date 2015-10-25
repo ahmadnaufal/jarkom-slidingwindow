@@ -26,7 +26,7 @@ public:
 	void setTimeOut(int idx);
 	void setAckTrue(int idx);
 
-	Queue getFrameBuffer();
+	Queue& getFrameBuffer();
 	int getTimeOut(int idx);
 	bool getIsAck(int idx);
 

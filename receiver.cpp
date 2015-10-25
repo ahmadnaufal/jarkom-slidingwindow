@@ -46,7 +46,7 @@ void Receiver::receiveFrames() {
 	/* parent process: unlimited looping */
 	Frame temp;
 	while (1) {
- 		temp = *(rcvframe());
+ 		temp = rcvframe();
 
  		if (c == Endfile)
  			endFileReceived = 1;
@@ -60,7 +60,7 @@ static void Receiver::rcvframe() {
  	char* serializedFrame;
  	struct sockaddr_in srcAddr; socklen_t srcLen;
 
- 	if (recvfrom(sockfd, serializedFrame, 20, 0, (struct sockaddr *) &srcAddr, &srcLen) < 0)
+ 	if (recvfrom(sockfd, serializedFrame, DATAMAX+6, 0, (struct sockaddr *) &srcAddr, &srcLen) < 0)
  		error("ERROR: Failed to receive character from socket\n");
 
 	Frame *temp = new Frame(serializedFrame); 	
@@ -93,4 +93,56 @@ static void Receiver::rcvframe() {
  		if(sendto(sockfd, ack->getSerialized(), ack->getSerializedSize(), 0,(struct sockaddr *) &srcAddr, srcLen) < 0)
  			error("ERROR: Failed to send ACK.\n");
  	}
+}
+
+void *childRProcess(void *threadid) {
+	Byte *data,
+	*current = NULL;
+
+ 	while (1) {
+ 		current = q_get(rxq, data);
+
+ 		// if end file, quit the process
+ 		/*if (current != NULL && endFileReceived)
+ 			break;*/
+ 		// introduce some delay here
+ 		sleep(2);
+ 	}
+
+ 	pthread_exit(NULL);
+}
+
+static Byte *q_get(QTYPE *queue, Byte *data)
+/* q_get returns a pointer to the buffer where data is read or NULL if buffer is empty. */
+{
+ 	Byte *current = NULL;
+ 	char b[1];
+ 	static int counter = 1;
+
+ 	/* Only consume if the buffer is not empty */
+ 	if (queue->count > 0) {
+ 		current = (Byte *) malloc(sizeof(Byte));
+ 		*current = queue->data[queue->front];
+ 		//if (*current == Endfile) exit(0);
+ 		// incrementing front (circular) and reducing number of elements
+ 		queue->front++;
+ 		if (queue->front == 8) queue->front = 0;
+ 		queue->count--;
+
+ 		printf("CONSUME! Consuming byte no. %d: ", counter++);
+		switch (*current) {
+			case CR:	printf("\'Carriage Return\'\n");
+						break;
+			case LF:	printf("\'Line Feed\'\n");
+						break;
+			case Endfile:
+						printf("\'End of File\'\n");
+						break;
+			case 255:	break;
+			default:	printf("\'%c\'\n", *current);
+						break;
+		}
+ 	}
+
+ 	return current;
 }

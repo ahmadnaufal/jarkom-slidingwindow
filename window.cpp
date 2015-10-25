@@ -9,7 +9,10 @@
 
 //Ctor
 Window::Window() : frameBuffer(WINSIZE) {
-	
+	for (int i=0; i<WINSIZE; i++) {
+		timeout[i] = 0;
+		isAck[i] = false;
+	}
 }
 
 //Cctor
@@ -43,9 +46,11 @@ void Window::slideWindow(Frame f) {
 
 //Add new frame to window
 void Window::addFrame(Frame f, int tm) {
+	Frame fr = f;
 	timeout[frameBuffer.getTail()] = tm;
 	isAck[frameBuffer.getTail()] = false; //ack has not received yet
-	frameBuffer.add(f);
+
+	frameBuffer.add(fr);
 }
 
 //Delete front frame of window
@@ -57,7 +62,7 @@ void Window::delFrame() {
 void Window::reduceTimeOut() {
 	for (int i=0; i<WINSIZE; i++) {
 		if (timeout[i] > 0)
-			i--;
+			timeout[i]--;
 	}
 }
 
@@ -72,8 +77,8 @@ void Window::setAckTrue(int idx) {
 }
 
 //Get frame buffer
-Queue Window::getFrameBuffer() {
-	return frameBuffer;
+Queue& Window::getFrameBuffer() {
+	return this->frameBuffer;
 }
 
 //Get timeout by index
