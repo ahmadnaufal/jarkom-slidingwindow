@@ -39,6 +39,7 @@ private:
 
 	Frame *frameStorage;
 	int fcount;
+	int received;
 	pthread_t thread[1];
 	Window window;
 	//Queue slidingWindow(WINSIZE);

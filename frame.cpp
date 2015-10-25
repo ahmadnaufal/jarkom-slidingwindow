@@ -1,10 +1,14 @@
 #include "frame.h"
+#include <iostream>
 
 using namespace std;
 
 //ctor
 Frame::Frame() {
-
+	data = new char[1];
+	serialized = new char[1];
+	no = 0;
+	size = 0;
 }
 
 //ctor with frameNo & frameData
@@ -44,6 +48,10 @@ Frame::Frame(const char* serializedFrame) {
 //cctor
 Frame::Frame(const Frame& f) {
 	no = f.no;
+
+
+	data = new char[ sizeof(f.data) ];
+	serialized = new char [ sizeof(f.serialized) ];
 	memcpy(data, f.data, sizeof(f.data));
 	memcpy(serialized, f.serialized, sizeof(f.serialized));
 	checksum = f.checksum;
@@ -66,6 +74,7 @@ Frame& Frame::operator=(const Frame& f) {
 //dtor
 Frame::~Frame() {
 	delete[] data;
+	delete[] serialized;
 }
 
 Byte Frame::getNo() {
