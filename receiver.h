@@ -1,7 +1,7 @@
-/* 
- * File 		: receiver.h
- * Author 		: Ahmad Naufal (049) - Tifani Warnita (055) - Asanilta Fahda (079)
- * Description	: Header for receiver
+  /* 
+ * File     : receiver.h
+ * Author     : Ahmad Naufal (049) - Tifani Warnita (055) - Asanilta Fahda (079)
+ * Description  : Header for receiver
  */ 
 
 #ifndef _RECEIVER_H_ 
@@ -30,31 +30,27 @@ using namespace std;
 
 class Receiver {
 public:
-	Receiver();
-	Receiver(char* _portNo); //Ctor
-	~Receiver();
+  Receiver();
+  Receiver(char* _portNo); //Ctor
+  ~Receiver();
 
 private:
-	int port;
-	Queue *frameEater;
-	pthread_t thread[1];
+  int port;
+  pthread_t thread[1];
+  bool endFileReceived;
+  Frame frameBuffer[MAXSEQ];A  int startWindow;
+  Queue tempQueue();
+  string finalMessage;
 
-	Byte sent_xonxoff;
-	unsigned send_xon = 0, send_xoff = 0;
-	int endFileReceived;
+  /* Socket */
+  int sockfd; // listen on sock_fd
+  struct sockaddr_in adhost;
 
-	/* Socket */
-	int sockfd; // listen on sock_fd
-	struct sockaddr_in adhost;
-
-	void initializeReceiver();
-	void receiveFrames();
-	static Byte *rcvframe();
-	static Byte *q_get(QTYPE *, Byte *);
-	void *childRProcess(void * threadid);
-	void error(const char* message);
-	void sendingAck();
-	
+  bool inWindow(int frameNo);
+  void initializeReceiver();
+  void receiveFrames();
+  void error(const char* message);
+  void childProcessFrames();
 };
 
 #endif
