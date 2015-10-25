@@ -80,13 +80,8 @@ void Transmitter::readFile() {
 void Transmitter::sendFrames() {
 	//if (pthread_create(&thread[0], NULL, &childProcessACK, 0) != 0) 
 	//	error("ERROR: Failed to create thread for child. Please free some space.\n");
-<<<<<<< HEAD
-	std::thread child(&Transmitter::childProcessACK, *this);
-	printf("masuk thread\n");
-=======
 	
 	//std::thread child(&Transmitter::childProcessACK, this);
->>>>>>> 884c27b993ca750e801d302b30add2f205779622
 
 	int i = 0; //number of frame sent
 	int j = 0; //number of frame put to the window
