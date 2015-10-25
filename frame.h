@@ -1,6 +1,7 @@
 #ifndef FRAME_H
 #define FRAME_H
 #include "slidingwindow.h"
+#include "checksum.h"
 #include <cstring>
 #include <cstdlib>
 #include <cstdio>

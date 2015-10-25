@@ -7,7 +7,10 @@
 #ifndef _RECEIVER_H_ 
 #define _RECEIVER_H_ 
 
-#include "queue.h"
+#include "ack.h"
+#include "checksum.h"
+#include "queue.h" 
+#include "slidingwindow.h"
 #include <stdio.h>
 #include <pthread.h>
 #include <stdlib.h>
@@ -17,7 +20,8 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <string.h>
-#include "slidingwindow.h"
+#include <string>
+#include <thread>
 
 #define MIN_UPPERLIMIT 5
 #define MAX_LOWERLIMIT 2
@@ -38,19 +42,24 @@ private:
   int port;
   pthread_t thread[1];
   bool endFileReceived;
-  Frame frameBuffer[MAXSEQ];A  int startWindow;
-  Queue tempQueue();
+  Frame frameBuffer[MAXSEQ];
+  int startWindow;
+  Queue tempQueue;
   string finalMessage;
+  bool sentAck[MAXSEQ];
 
   /* Socket */
   int sockfd; // listen on sock_fd
   struct sockaddr_in adhost;
+  struct sockaddr_in srcAddr;
 
+  void startChildProcess();
   bool inWindow(int frameNo);
   void initializeReceiver();
   void receiveFrames();
   void error(const char* message);
   void childProcessFrames();
+  void sendACK(Byte ACKtype, Byte frameNo);
 };
 
 #endif

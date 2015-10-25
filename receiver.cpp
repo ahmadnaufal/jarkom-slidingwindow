@@ -5,8 +5,7 @@
  */ 
 
 #include "receiver.h"
-
-using namespace std;
+#include <stdio.h>
 
 Receiver::Receiver() {
   port = 8080;
@@ -19,13 +18,14 @@ Receiver::Receiver(char* _portNo) { //Ctor
   startWindow = 0;
   endFileReceived = false;
   initializeReceiver();
+  startChildProcess();
 }
 
 Receiver::~Receiver() {
 }
 
 void Receiver::initializeReceiver() {
-  printf("Creating socket to self in Port %s...\n", port);
+  printf("Creating socket to self in Port %d...\n", port);
    if ((sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
      error("ERROR: Create socket failed.\n");
 
@@ -36,7 +36,7 @@ void Receiver::initializeReceiver() {
 
    endFileReceived = false;
 
-   int res = bind(sockfd, (struct sockaddr*) &adhost, sizeof(adhost))
+   int res = bind(sockfd, (struct sockaddr*) &adhost, sizeof(adhost));
   if (res < 0)
      error("ERROR: Binding failed.\n");
 
@@ -45,53 +45,70 @@ void Receiver::initializeReceiver() {
    }
 }
 
-void Receiver::receiveFrames() {
-  std::thread child(&Transmitter::childProcessFrames, *this);
+void Receiver::startChildProcess() {
+  std::thread processThread(&Receiver::receiveFrames, this);
+  std::thread processThreadTwo(&Receiver::childProcessFrames, this);
+  //std::thread mainThread(&Transmitter::sendFrames, this);
 
+    // more stuff
+    processThread.join();
+    processThreadTwo.join();
+    //mainThread.join();
+}
+
+void Receiver::receiveFrames() {;
   while (!endFileReceived) {
     while (sentAck[startWindow]) {
       //tambahin kode buat nambahin frameBuffer[startWindow].getData() ke akhir string finalMessage ya mad
       string temp(frameBuffer[startWindow].getData());
       finalMessage += temp;
       sentAck[startWindow] = false;
-      startWindow=(startWindow+1)%WINSIZE;
+      startWindow=(startWindow+1)%MAXSEQ;
     }
-    Frame *temp = tempQueue.del();   
-    if (inWindow(temp->getNo())) {
-       if (temp->getChecksum() == Checksum::checksum(serializedFrame, sizeof(serializedFrame))) {
-         printf("[ACK] Package %d secure. Sending ACK %d...\n", temp->getNo(), temp->getNo());
-         sendACK(ACK, temp->getNo());
-         frameBuffer[temp->getNo()] = temp;
-         sentAck[temp->getNo()] = true;
+    if (!tempQueue.isEmpty()) {
+      Frame temp = tempQueue.del();   
+      if (inWindow(temp.getNo())) {
+       if (temp.getChecksum() == Checksum::createChecksum(temp.getSerialized(), temp.getSize()-2)) {
+         printf("[ACK] Package %d secure. Sending ACK %d...\n", temp.getNo(), temp.getNo());
+         sendACK(ACK, temp.getNo());
+         frameBuffer[temp.getNo()] = temp;
+         sentAck[temp.getNo()] = true;
        } else {
-         printf("[NAK] Package %d error or corrupt. Sending NAK...\n", temp->getNo());
-         sendACK(NAK, temp->getNo());
+         printf("[NAK] Package %d error or corrupt. Sending NAK...\n", temp.getNo());
+         sendACK(NAK, temp.getNo());
        }
-    } else {
-       sendACK(ACK,temp->getNo());
+      } else {
+       sendACK(ACK,temp.getNo());
+      }
+      //cek apakah ada karakter endfil e atau nggak
     }
-    //cek apakah ada karakter endfil e atau nggak
   }
 }
 
 void Receiver::childProcessFrames() {
-   char* serializedFrame;
-   struct sockaddr_in srcAddr; socklen_t srcLen;
+    while (true) {
+   char serializedFrame[DATAMAX+6];
+    
+      socklen_t srcLen = sizeof(srcAddr);
+      int rs = recvfrom(sockfd, serializedFrame, DATAMAX+6, 0, (struct sockaddr *) &srcAddr, &srcLen);
+      Frame temp(serializedFrame);
+      printf("Receiving packet no-%d, checking...\n", temp.getNo());
+      
+      if (rs == -1)
+        error("ERROR: Failed to receive character from socket\n");
 
-   if (recvfrom(sockfd, serializedFrame, 20, 0, (struct sockaddr *) &srcAddr, &srcLen) < 0)
-     error("ERROR: Failed to receive character from socket\n");
-
-  tempQueue.add(new Frame(serializedFrame));  
+      tempQueue.add(temp);
+    }  
 }
 
 void Receiver::sendACK(Byte ACKtype, Byte frameNo) {
-  Ack *ack = new Ack(ACKtype, frameNo);  
-  if(sendto(sockfd, ack->getSerialized(), ack->getSerializedSize(), 0,(struct sockaddr *) &srcAddr, srcLen) < 0)
+  Ack *ack = new Ack(ACKtype, frameNo);
+  if(sendto(sockfd, ack->getSerialized(), sizeof(ack->getSerialized())-1, 0,(struct sockaddr *) &srcAddr, sizeof(srcAddr)) == -1)
      error("ERROR: Failed to send ACK/NAK.\n");
 }
 
 bool Receiver::inWindow(int frameNo) {
-  return (((frameNo-startWindow)<WINSIZE && (frameNo-startWindow)>=0) || (frameNo+MAXSEQ-i)<WINSIZE && (frameNo+MAXSEQ-i)>0);
+  return (((frameNo-startWindow)<WINSIZE && (frameNo-startWindow)>=0) || (frameNo+MAXSEQ-startWindow)<WINSIZE && (frameNo+MAXSEQ-startWindow)>0);
 }
 
 void Receiver::error(const char *message) {

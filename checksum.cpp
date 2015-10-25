@@ -10,7 +10,7 @@
 
 using namespace std;
 
-unsigned short Checksum::createChecksum(Byte *data, size_t bytes) {
+unsigned short Checksum::createChecksum(char *data, int bytes) {
     unsigned short remain;
     unsigned long long msg;
 
@@ -20,10 +20,9 @@ unsigned short Checksum::createChecksum(Byte *data, size_t bytes) {
         msg += data[i];
         j+=8;
         ++i;
-        cout << msg << endl;
     };
 
-    unsigned int size_bit = (bytes * sizeof(Byte) * 8) + (sizeof(remain) * 8); 
+    unsigned int size_bit = (bytes * sizeof(char) * 8) + (sizeof(remain) * 8); 
     msg = msg << (sizeof(remain) * 8);
     unsigned int polypoly;
 

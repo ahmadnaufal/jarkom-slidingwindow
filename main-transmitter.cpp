@@ -4,7 +4,6 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-	cout << "Haha kobam" << endl;
 	if (argc < 4) {
 		// case if arguments are less than specified
 		printf("Please use the program with arguments: %s <target-ip> <port> <filename>\n", argv[0]);

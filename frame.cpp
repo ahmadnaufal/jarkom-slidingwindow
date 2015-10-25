@@ -48,10 +48,9 @@ Frame::Frame(const char* serializedFrame) {
 //cctor
 Frame::Frame(const Frame& f) {
 	no = f.no;
-
-
 	data = new char[ sizeof(f.data) ];
 	serialized = new char [ sizeof(f.serialized) ];
+
 	memcpy(data, f.data, sizeof(f.data));
 	memcpy(serialized, f.serialized, sizeof(f.serialized));
 	checksum = f.checksum;
@@ -73,8 +72,8 @@ Frame& Frame::operator=(const Frame& f) {
 
 //dtor
 Frame::~Frame() {
-	delete[] data;
-	delete[] serialized;
+	// delete[] data;
+	// delete[] serialized;
 }
 
 Byte Frame::getNo() {
@@ -110,9 +109,21 @@ void Frame::serialize() {
 
 	serializedFrame[i++] = ETX;
 
-	checksum = 1;//Checksum::checksum(serializedFrame,offset);
+	checksum = Checksum::createChecksum(serializedFrame,i);
 	memcpy(serializedFrame + i, &checksum, sizeof(checksum));
 	i += sizeof(checksum); size = i;
 	serialized = new char[size];
 	memcpy(serialized, serializedFrame, size);
 }
+
+// int main(int argc, char const *argv[])
+// {
+// 	char hello[] = "hello";
+// 	Byte car = 3;
+// 	Frame frame(car, hello);
+// 	cout << frame.getNo() << " " << frame.getData() << " " << frame.getChecksum();
+
+// 	Frame t(frame.getSerialized());
+// 	cout << t.getNo() << " " << t.getData() << " " << t.getChecksum();
+// 	return 0;
+// }

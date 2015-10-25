@@ -5,6 +5,7 @@
  */ 
 
  #include "ack.h"
+ #include <iostream>
 
  using namespace std;
 
@@ -14,6 +15,7 @@
  	ack = 0;
  	frameno = 0;
  	checksum = 0;
+ 	serialized = new char[1];
  }
 
  Ack::Ack(Byte a, Byte f) { //Ctor with param
@@ -35,19 +37,30 @@
  }
 
  Ack::Ack(const Ack& a) {
+ 	int i;
  	ack = a.ack;
  	frameno = a.frameno;
  	checksum = a.checksum;
+ 	serialized = new char[sizeof(a.serialized)];
+ 	for (i=0; i<sizeof(serialized); ++i)
+ 		serialized[i] = a.serialized[i];
+ 	serialized[i] = '\0';
  }
 
  Ack& Ack::operator=(const Ack& a) {
+ 	int i;
  	ack = a.ack;
  	frameno = a.frameno;
  	checksum = a.checksum;
+ 	serialized = new char[sizeof(a.serialized)];
+ 	for (i=0; i<sizeof(serialized); ++i)
+ 		serialized[i] = a.serialized[i];
+ 	serialized[i] = '\0';
  	return *this;
  }
 
  Ack::~Ack() { //Dtor
+ 	delete [] serialized;
  }
 
 Byte Ack::getAck() {
@@ -73,7 +86,7 @@ void Ack::serialize() {
 	serializedAck[i] = ack; i++;
 	serializedAck[i] = frameno; i++;
 
-	checksum = 1;//Checksum::checksum(serializedAck,offset);
+	checksum = Checksum::createChecksum(serializedAck,i);
 	memcpy(serializedAck + i, &checksum, sizeof(checksum));
 	// copying to serialized attribute
 	memcpy(serialized, serializedAck, sizeof(serializedAck));

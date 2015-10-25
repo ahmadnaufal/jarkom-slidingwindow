@@ -59,10 +59,8 @@ void Transmitter::readFile() {
 		if (i==DATAMAX) {
 			tempdata[i] = '\0';
 			i=0;
-			cout << "ini tempdata " << tempdata << endl;
 			Frame temp(fcount%MAXSEQ,tempdata);
-			frameStorage[fcount++] = temp; 
-			cout << "berhasil bikin" << endl;		
+			frameStorage[fcount++] = temp; 		
 		}
 
 		if (c==EOF) {
@@ -73,9 +71,7 @@ void Transmitter::readFile() {
 		} else {
 			tempdata[i++] = c;
 		}
-		cout << i << " " << tempdata[i-1] << endl;
 	} while (c!=EOF);
-	cout << "berhasil baca file" << endl;
 }
 
 void Transmitter::startChildProcess() {
@@ -99,8 +95,6 @@ void Transmitter::sendFrames() {
 	//	error("ERROR: Failed to create thread for child. Please free some space.\n");
 	
 	//std::thread child(&Transmitter::childProcessACK, this);
-
-	cout << "PARENT" << endl;
 	int i = 0; //number of frame sent
 	int j = 0; //number of frame put to the window
 	int timeCount = 0;
@@ -120,16 +114,10 @@ void Transmitter::sendFrames() {
 
 	//Sending the frame
 	while (i<=fcount || received<fcount) {
-		cout << "i: " << i << " received:" << received << " fcount:" << fcount << endl;
 		for(int x=0; x<window.getFrameBuffer().getCount(); x++) {
 			int a = (x+window.getFrameBuffer().getHead())%WINSIZE; // Ini ga efektif banget maaf ya
 			if(window.getTimeOut(a) == 0 && !window.getIsAck(a)) {
-				/*cout << "Mencoba mengirim: " << window.getFrameBuffer().getElement(a).getData() << endl;
-				cout << "Yang mau dikirim " << window.getFrameBuffer().getElement(a).getSerialized() << endl;
-				cout << "Size: " << window.getFrameBuffer().getElement(a).getSize() << endl;
-				cout << "Size coba: " << sizeof(window.getFrameBuffer().getElement(a).getSerialized())-1 << endl;
-				cout << "Data: " << window.getFrameBuffer().getElement(a).getData() << endl;*/
-				if (sendto(sockfd, window.getFrameBuffer().getElement(a).getSerialized(), sizeof(window.getFrameBuffer().getElement(a).getSerialized())-1, 0, (const struct sockaddr *) &receiverAddr, sizeof(receiverAddr)) == -1)
+				if (sendto(sockfd, window.getFrameBuffer().getElement(a).getSerialized(), sizeof(window.getFrameBuffer().getElement(a).getSerialized()), 0, (const struct sockaddr *) &receiverAddr, sizeof(receiverAddr)) == -1)
 					error("ERROR: sendto() sent buffer with size more than expected.\n");
 				printf("Sending frame no. %d: %s\n", window.getFrameBuffer().getElement(a).getNo(), window.getFrameBuffer().getElement(a).getData());
 				i++;
@@ -168,10 +156,10 @@ void Transmitter::childProcessACK() {
 	struct sockaddr_in srcAddr;
 	socklen_t srcLen;
 	
-	char* serializedAck;
+	char serializedAck[4];
 
 	while (isSocketOpen) {
-		if (recvfrom(sockfd, serializedAck, 4, 0, (struct sockaddr *) &srcAddr, &srcLen) != sizeof(Ack))
+		if (recvfrom(sockfd, serializedAck, 4, 0, (struct sockaddr *) &srcAddr, &srcLen) < 0 )
 			error("ERROR: recvfrom() receive buffer with size more than expected.\n");
 
 		Ack *ack = new Ack(serializedAck);

@@ -19,7 +19,7 @@ class Checksum {
 public:
 	Checksum();
 	~Checksum();
-	static unsigned short createChecksum(Byte *data, size_t bytes);
+	static unsigned short createChecksum(char *data, int bytes);
 private:
 
 };

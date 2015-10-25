@@ -8,6 +8,7 @@
  #define _ACK_H_
 
  #include "slidingwindow.h"
+ #include "checksum.h"
 #include <cstring>
  #include <cstdio>
  #include <cstdlib>
