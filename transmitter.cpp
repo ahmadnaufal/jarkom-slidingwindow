@@ -25,6 +25,7 @@ Transmitter::Transmitter(char* IP, char* portNo, char* file) { //Ctor with param
 
 	initializeTransmitter();
 	readFile();
+	sendFrames();
 }
 
 Transmitter::~Transmitter() { //Dtor
@@ -79,8 +80,8 @@ void Transmitter::readFile() {
 void Transmitter::sendFrames() {
 	//if (pthread_create(&thread[0], NULL, &childProcessACK, 0) != 0) 
 	//	error("ERROR: Failed to create thread for child. Please free some space.\n");
-	
 	std::thread child(&Transmitter::childProcessACK, *this);
+	printf("masuk thread\n");
 
 	int i = 0; //number of frame sent
 	int j = 0; //number of frame put to the window
@@ -141,6 +142,7 @@ void Transmitter::childProcessACK() {
 	// receive ACK/NAK from receiver
 	struct sockaddr_in srcAddr;
 	socklen_t srcLen;
+	printf("masuk thread\n");
 	
 	char* serializedAck;
 
