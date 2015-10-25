@@ -8,6 +8,8 @@
 
  using namespace std;
 
+ const int Ack::acksize = 4;
+
  Ack::Ack() { //Ctor
  	ack = 0;
  	frameno = 0;
@@ -17,12 +19,13 @@
  Ack::Ack(Byte a, Byte f) { //Ctor with param
  	ack = a;
  	frameno = f;
+ 	serialized = new char[acksize];
  	serialize();
  }
 
- Ack::Ack(const char* serializedAck) {
+ Ack::Ack(const char* serializedAck) {	// ack constructor with a serialized ack as parameter
+ 	// build ack from serialized structure
  	Byte *bptr = (Byte*) serializedAck;
-    bptr++; 	// skipping through soh
     ack = *bptr; bptr++;
 
     frameno = *bptr; bptr++; 	// skipping through etx
@@ -59,15 +62,19 @@ unsigned short Ack::getChecksum() {
 	return checksum;
 }
 
+char* Ack::getSerialized() {
+	return serialized;
+}
+
 void Ack::serialize() {
-	int offset=0;
-	Byte serializedAck[4];
-	memcpy(serializedAck + offset, &ack, sizeof(ack));
-	offset+=sizeof(ack);
-	memcpy(serializedAck + offset, &frameno, sizeof(frameno));
-	offset+=sizeof(frameno);
+	char serializedAck[acksize];
+	
+	int i = 0;
+	serializedAck[i] = ack; i++;
+	serializedAck[i] = frameno; i++;
+
 	checksum = 1;//Checksum::checksum(serializedAck,offset);
-	memcpy(serializedAck + offset, &checksum, sizeof(checksum));
-	offset+=sizeof(checksum);
+	memcpy(serializedAck + i, &checksum, sizeof(checksum));
+	// copying to serialized attribute
 	memcpy(serialized, serializedAck, sizeof(serializedAck));
 }

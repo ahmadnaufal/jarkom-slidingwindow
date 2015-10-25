@@ -160,10 +160,10 @@ void* Transmitter::childProcessACK(void *threadid) {
 			else
 				i++;
 		}
-		if ((*ack).getAck()==ACK) {
+		if (ack->getAck()==ACK) {
 			printf("Received ACK for Frame No: %d\n",ack->getFrameNo());
 			isAck[(Transmitter::window.getHead()+i)%WINSIZE] = true;
-		} else if ((*ack).getAck()==NAK) {
+		} else if (ack->getAck()==NAK) {
 			if (sendto(Transmitter::sockfd, Transmitter::window.getElement(i).getSerialized(), Transmitter::window.getElement(i).getSize(), 0, (const struct sockaddr *) &Transmitter::receiverAddr, sizeof(Transmitter::receiverAddr)) != Transmitter::window.getElement(i).getSize())
 					error("ERROR: sendto() sent buffer with size more than expected.\n");
 				printf("Sending frame no. %d: %s\n", Transmitter::window.getElement(i).getNo(), Transmitter::window.getElement(i).getData());

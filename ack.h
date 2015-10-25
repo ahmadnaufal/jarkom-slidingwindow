@@ -9,6 +9,8 @@
 
  #include "slidingwindow.h"
 #include <cstring>
+ #include <cstdio>
+ #include <cstdlib>
 
  class Ack {
  public:
@@ -30,6 +32,8 @@
 	Byte frameno;
 	unsigned short checksum;
 	char* serialized;
+
+	static const int acksize;
 
 	void serialize();
  };

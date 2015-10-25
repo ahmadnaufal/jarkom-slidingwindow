@@ -3,19 +3,20 @@
 using namespace std;
 
 //ctor
-Frame::Frame() : soh(SOH), stx(STX), etx(ETX) {
+Frame::Frame() {
 
 }
 
 //ctor with frameNo & frameData
-Frame::Frame(Byte frameNo, char* frameData) : soh(SOH), stx(STX), etx(ETX) {
+Frame::Frame(Byte frameNo, char* frameData) {
 	no = frameNo;
-	data = frameData;
+	data = new char[ sizeof(frameData) ];
+	strcpy(data, frameData);
 	serialize();
 }
 
 //ctor with serializedFrame
-Frame::Frame(const char* serializedFrame) : soh(SOH), stx(STX), etx(ETX) {
+Frame::Frame(const char* serializedFrame) {
     char *bptr = (char*) serializedFrame;
     bptr++; 	// skipping through soh
     no = *bptr;
@@ -23,11 +24,16 @@ Frame::Frame(const char* serializedFrame) : soh(SOH), stx(STX), etx(ETX) {
     bptr += 2;	// skipping through stx
 
     int i = 0;
-    while (i < DATAMAX && *bptr != etx) {
-        data[i] = *bptr;
+    char temp[DATAMAX]; 	// temporary array to store the data
+    while (i < DATAMAX && *bptr != ETX) {
+        temp[i] = *bptr;
         bptr++;
         i++;
     }
+
+    // allocating the data containers for the frame
+    data = new char[i];
+    memcpy(data, temp, i);
 
     bptr++; 	// skipping through etx
 
@@ -36,12 +42,11 @@ Frame::Frame(const char* serializedFrame) : soh(SOH), stx(STX), etx(ETX) {
 }
 
 //cctor
-Frame::Frame(const Frame& f) : soh(f.soh), stx(f.stx), etx(f.etx) {
+Frame::Frame(const Frame& f) {
 	no = f.no;
 	memcpy(data, f.data, sizeof(f.data));
 	memcpy(serialized, f.serialized, sizeof(f.serialized));
 	checksum = f.checksum;
-
 }
 
 //operator =
@@ -80,20 +85,21 @@ int Frame::getSize() {
 }
 
 void Frame::serialize() {
-	int offset=0;
-	Byte serializedFrame[15+DATAMAX];
-	memcpy(serializedFrame + offset, &soh, sizeof(soh));
-	offset+=sizeof(soh);
-	memcpy(serializedFrame + offset, &no, sizeof(no));
-	offset+=sizeof(no);
-	memcpy(serializedFrame + offset, &stx, sizeof(stx));
-	offset+=sizeof(stx);
-	memcpy(serializedFrame + offset, data, strlen(data));
-	offset+=strlen(data);
-	memcpy(serializedFrame + offset, &etx, sizeof(etx));
-	offset+=sizeof(etx);
+	char serializedFrame[DATAMAX+6];
+	int i = 0;
+
+	serializedFrame[i++] = SOH;
+	serializedFrame[i++] = no;
+
+	serializedFrame[i++] = STX;
+	memcpy(serializedFrame + i, data, strlen(data));
+	i += strlen(data);
+
+	serializedFrame[i++] = ETX;
+
 	checksum = 1;//Checksum::checksum(serializedFrame,offset);
-	memcpy(serializedFrame + offset, &checksum, sizeof(checksum));
-	offset+=sizeof(checksum); size = offset;
-	memcpy(serialized, serializedFrame, sizeof(serializedFrame));
+	memcpy(serializedFrame + i, &checksum, sizeof(checksum));
+	i += sizeof(checksum); size = i;
+	serialized = new char[i];
+	memcpy(serialized, serializedFrame, size);
 }

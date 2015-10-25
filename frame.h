@@ -2,6 +2,8 @@
 #define FRAME_H
 #include "slidingwindow.h"
 #include <cstring>
+#include <cstdlib>
+#include <cstdio>
 
 using namespace std;
 
@@ -20,13 +22,12 @@ public:
 	int getSize();
 
 private:
-	Byte no;
-	char* data;
-	unsigned short checksum;
+	/* Actual properties of the Frame */
+	Byte no;					// frame number
+	char* data;					// data containers
+	unsigned short checksum;	// checksum for data
+
 	char* serialized;
-	const Byte soh;
-	const Byte stx;
-	const Byte etx;
 	int size;
 
 	void serialize();
