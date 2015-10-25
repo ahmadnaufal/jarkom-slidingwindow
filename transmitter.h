@@ -47,6 +47,8 @@ private:
 	void initializeTransmitter();
 	void readFile();
 	void sendFrames();
+	void startChildProcess();
+	void startParentProcess();
 	void childProcessACK();
 	void error(const char *message);
 	void initTimeoutAck();

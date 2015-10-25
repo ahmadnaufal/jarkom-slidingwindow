@@ -25,7 +25,8 @@ Transmitter::Transmitter(char* IP, char* portNo, char* file) { //Ctor with param
 
 	initializeTransmitter();
 	readFile();
-	sendFrames();
+	startChildProcess();
+	//sendFrames();
 }
 
 Transmitter::~Transmitter() { //Dtor
@@ -37,7 +38,7 @@ void Transmitter::initializeTransmitter() {
 		error("ERROR: Receiver Address is Unknown or Wrong.\n");
 	if ((sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
 		error("ERROR: Create socket failed.\n");
-	Transmitter::isSocketOpen = true;
+	isSocketOpen = true;
 
 	memset(&receiverAddr, 0, sizeof(receiverAddr));
 	receiverAddr.sin_family = AF_INET;
@@ -78,12 +79,29 @@ void Transmitter::readFile() {
 	cout << "berhasil baca file" << endl;
 }
 
+void Transmitter::startChildProcess() {
+
+	std::thread processThread(&Transmitter::childProcessACK, this);
+	std::thread processThreadTwo(&Transmitter::startParentProcess, this);
+	//std::thread mainThread(&Transmitter::sendFrames, this);
+
+    // more stuff
+    processThread.join();
+    processThreadTwo.join();
+    //mainThread.join();
+}
+
+void Transmitter::startParentProcess() {
+	sendFrames();
+}
+
 void Transmitter::sendFrames() {
 	//if (pthread_create(&thread[0], NULL, &childProcessACK, 0) != 0) 
 	//	error("ERROR: Failed to create thread for child. Please free some space.\n");
 	
 	//std::thread child(&Transmitter::childProcessACK, this);
 
+	cout << "PARENT" << endl;
 	int i = 0; //number of frame sent
 	int j = 0; //number of frame put to the window
 	int timeCount = 0;
@@ -107,8 +125,12 @@ void Transmitter::sendFrames() {
 		for(int x=0; x<window.getFrameBuffer().getCount(); x++) {
 			int a = (x+window.getFrameBuffer().getHead())%WINSIZE; // Ini ga efektif banget maaf ya
 			if(window.getTimeOut(a) == 0) {
-				cout << "Mencoba mengirim: " << window.getFrameBuffer().getElement(a).getSerialized() << endl;
-				if (sendto(sockfd, window.getFrameBuffer().getElement(a).getSerialized(), window.getFrameBuffer().getElement(a).getSize(), 0, (const struct sockaddr *) &receiverAddr, sizeof(receiverAddr)) == -1)
+				/*cout << "Mencoba mengirim: " << window.getFrameBuffer().getElement(a).getData() << endl;
+				cout << "Yang mau dikirim " << window.getFrameBuffer().getElement(a).getSerialized() << endl;
+				cout << "Size: " << window.getFrameBuffer().getElement(a).getSize() << endl;
+				cout << "Size coba: " << sizeof(window.getFrameBuffer().getElement(a).getSerialized())-1 << endl;
+				cout << "Data: " << window.getFrameBuffer().getElement(a).getData() << endl;*/
+				if (sendto(sockfd, window.getFrameBuffer().getElement(a).getSerialized(), sizeof(window.getFrameBuffer().getElement(a).getSerialized())-1, 0, (const struct sockaddr *) &receiverAddr, sizeof(receiverAddr)) == -1)
 					error("ERROR: sendto() sent buffer with size more than expected.\n");
 				printf("Sending frame no. %d: %s\n", window.getFrameBuffer().getElement(a).getNo(), window.getFrameBuffer().getElement(a).getData());
 				i++;
@@ -144,13 +166,12 @@ void Transmitter::error(const char *message) {
 void Transmitter::childProcessACK() {
 	// child process
 	// receive ACK/NAK from receiver
-	cout << "HAI AKU PROSES ANAK!!!" << endl;
-	//struct sockaddr_in srcAddr;
-	//socklen_t srcLen;
+	struct sockaddr_in srcAddr;
+	socklen_t srcLen;
 	
-	//char* serializedAck;
+	char* serializedAck;
 
-	/* while (Transmitter::isSocketOpen) {
+	while (isSocketOpen) {
 		if (recvfrom(sockfd, serializedAck, 4, 0, (struct sockaddr *) &srcAddr, &srcLen) != sizeof(Ack))
 			error("ERROR: recvfrom() receive buffer with size more than expected.\n");
 
@@ -173,8 +194,6 @@ void Transmitter::childProcessACK() {
 					error("ERROR: sendto() sent buffer with size more than expected.\n");
 			printf("Sending frame no. %d: %s\n", window.getFrameBuffer().getElement(i).getNo(), window.getFrameBuffer().getElement(i).getData());
 			window.setTimeOut(i);
-		}		
-	} */
-
-	pthread_exit(NULL);
+		} 		
+	}
 }
