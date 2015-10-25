@@ -26,7 +26,6 @@ Transmitter::Transmitter(char* IP, char* portNo, char* file) { //Ctor with param
 	initializeTransmitter();
 	readFile();
 	startChildProcess();
-	//sendFrames();
 }
 
 Transmitter::~Transmitter() { //Dtor

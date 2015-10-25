@@ -113,6 +113,6 @@ void Frame::serialize() {
 	checksum = 1;//Checksum::checksum(serializedFrame,offset);
 	memcpy(serializedFrame + i, &checksum, sizeof(checksum));
 	i += sizeof(checksum); size = i;
-	serialized = new char[i];
+	serialized = new char[size];
 	memcpy(serialized, serializedFrame, size);
 }
