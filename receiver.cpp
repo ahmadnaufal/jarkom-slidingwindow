@@ -6,7 +6,6 @@
 
 #include "receiver.h"
 #include <stdio.h>
-using namespace std;
 
 Receiver::Receiver() {
   port = 8080;
@@ -58,7 +57,7 @@ void Receiver::startChildProcess() {
 }
 
 void Receiver::receiveFrames() {;
-  while (!endFileReceived) {
+  while (!(endFileReceived && startWindow == endFileFrame && sentAck[endFileFrame])) {
     while (sentAck[startWindow]) {
       //tambahin kode buat nambahin frameBuffer[startWindow].getData() ke akhir string finalMessage ya mad
       string temp(frameBuffer[startWindow].getData());
@@ -69,27 +68,33 @@ void Receiver::receiveFrames() {;
     if (!tempQueue.isEmpty()) {
       Frame temp = tempQueue.del();   
       if (inWindow(temp.getNo())) {
-        cout << temp.getChecksum() << " " <<Checksum::createChecksum(temp.getSerialized(), temp.getSize()) << endl; 
-        if (temp.getChecksum() == Checksum::createChecksum(temp.getSerialized(), temp.getSize()-2)) {
-          printf("[ACK] Package %d secure. Sending ACK %d...\n", temp.getNo(), temp.getNo());
-          sendACK(ACK, temp.getNo());
-          frameBuffer[temp.getNo()] = temp;
-          sentAck[temp.getNo()] = true;
-        } else {
-          printf("[NAK] Package %d error or corrupt. Sending NAK...\n", temp.getNo());
-          sendACK(NAK, temp.getNo());
-        }
+      	cout << "receiver: " << temp.getSize() << endl;
+      	cout << temp.getChecksum() << endl;
+      	cout << Checksum::createChecksum(temp.getSerialized(), temp.getSize()-sizeof(temp.getChecksum())) << endl;
+       if (temp.getChecksum() == Checksum::createChecksum(temp.getSerialized(), temp.getSize()-sizeof(temp.getChecksum()))) {
+         printf("[ACK] Package %d secure. Sending ACK %d...\n", temp.getNo(), temp.getNo());
+         sendACK(ACK, temp.getNo());
+         frameBuffer[temp.getNo()] = temp;
+         sentAck[temp.getNo()] = true;
+       } else {
+         printf("[NAK] Package %d error or corrupt. Sending NAK...\n", temp.getNo());
+         sendACK(NAK, temp.getNo());
+       }
       } else {
-        sendACK(ACK,temp.getNo());
+       sendACK(ACK,temp.getNo());
       }
-      //cek apakah ada karakter endfil e atau nggak
+      if (temp.getData()[strlen(temp.getData())-1]==Endfile) {
+      	cout << "endfile received" << endl;
+      	endFileReceived = true;
+      	endFileFrame = temp.getNo();
+      }
     }
   }
 }
 
 void Receiver::childProcessFrames() {
     while (true) {
-      char serializedFrame[DATAMAX+6];
+   char serializedFrame[DATAMAX+6];
     
       socklen_t srcLen = sizeof(srcAddr);
       int rs = recvfrom(sockfd, serializedFrame, DATAMAX+6, 0, (struct sockaddr *) &srcAddr, &srcLen);
@@ -105,7 +110,7 @@ void Receiver::childProcessFrames() {
 
 void Receiver::sendACK(Byte ACKtype, Byte frameNo) {
   Ack *ack = new Ack(ACKtype, frameNo);
-  if(sendto(sockfd, ack->getSerialized(), sizeof(ack->getSerialized()), 0,(struct sockaddr *) &srcAddr, sizeof(srcAddr)) == -1)
+  if(sendto(sockfd, ack->getSerialized(), sizeof(ack->getSerialized())-1, 0,(struct sockaddr *) &srcAddr, sizeof(srcAddr)) == -1)
      error("ERROR: Failed to send ACK/NAK.\n");
 }
 

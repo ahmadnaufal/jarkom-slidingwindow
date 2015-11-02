@@ -60,17 +60,23 @@ void Transmitter::readFile() {
 			tempdata[i] = '\0';
 			i=0;
 			Frame temp(fcount%MAXSEQ,tempdata);
-			frameStorage[fcount++] = temp; 		
+			cout << "transmitter1: " << temp.getSize() << endl;
+			frameStorage[fcount++] = temp;
+			cout << "transmitter2: " << frameStorage[fcount-1].getSize() << endl; 		
 		}
 
 		if (c==EOF) {
 			tempdata[i] = Endfile;
 			tempdata[i+1] = '\0';
 			Frame temp(fcount%MAXSEQ,tempdata);
+
+			cout << "transmitter1: " << temp.getSize() << endl;
 			frameStorage[fcount] = temp; 
+			cout << "transmitter2: " << frameStorage[fcount].getSize() << endl; 	
 		} else {
 			tempdata[i++] = c;
 		}
+
 	} while (c!=EOF);
 }
 
@@ -116,7 +122,8 @@ void Transmitter::sendFrames() {
 		for(int x=0; x<window.getFrameBuffer().getCount(); x++) {
 			int a = (x+window.getFrameBuffer().getHead())%WINSIZE; // Ini ga efektif banget maaf ya
 			if(window.getTimeOut(a) == 0 && !window.getIsAck(a)) {
-				if (sendto(sockfd, window.getFrameBuffer().getElement(a).getSerialized(), sizeof(window.getFrameBuffer().getElement(a).getSerialized()), 0, (const struct sockaddr *) &receiverAddr, sizeof(receiverAddr)) == -1)
+				cout << "transmit: " << window.getFrameBuffer().getElement(a).getSize() << endl;
+				if (sendto(sockfd, window.getFrameBuffer().getElement(a).getSerialized(), window.getFrameBuffer().getElement(a).getSize(), 0, (const struct sockaddr *) &receiverAddr, sizeof(receiverAddr)) == -1)
 					error("ERROR: sendto() sent buffer with size more than expected.\n");
 				printf("Sending frame no. %d: %s\n", window.getFrameBuffer().getElement(a).getNo(), window.getFrameBuffer().getElement(a).getData());
 				i++;
@@ -176,9 +183,12 @@ void Transmitter::childProcessACK() {
 				received++;
 			} else if (ack->getAck()==NAK) {
 				printf("Received NAK for Frame No: %d\n",ack->getFrameNo());
-				if (sendto(sockfd, window.getFrameBuffer().getElement(i).getSerialized(), window.getFrameBuffer().getElement(i).getSize(), 0, (const struct sockaddr *) &receiverAddr, sizeof(receiverAddr)) != window.getFrameBuffer().getElement(i).getSize())
+				cout << (window.getFrameBuffer().getHead()+i)%WINSIZE << endl;
+				cout << window.getFrameBuffer().getElement((window.getFrameBuffer().getHead()+i)%WINSIZE).getSize() << endl;
+				cout << window.getFrameBuffer().getElement((window.getFrameBuffer().getHead()+i)%WINSIZE).getData() << endl;
+				if (sendto(sockfd, window.getFrameBuffer().getElement((window.getFrameBuffer().getHead()+i)%WINSIZE).getSerialized(), window.getFrameBuffer().getElement((window.getFrameBuffer().getHead()+i)%WINSIZE).getSize(), 0, (const struct sockaddr *) &receiverAddr, sizeof(receiverAddr)) != window.getFrameBuffer().getElement(i).getSize())
 						error("ERROR: sendto() sent buffer with size more than expected.\n");
-				printf("Sending frame no. %d: %s\n", window.getFrameBuffer().getElement(i).getNo(), window.getFrameBuffer().getElement(i).getData());
+				printf("Sending frame no. %d: %s\n", window.getFrameBuffer().getElement((window.getFrameBuffer().getHead()+i)%WINSIZE).getNo(), window.getFrameBuffer().getElement((window.getFrameBuffer().getHead()+i)%WINSIZE).getData());
 				window.setTimeOut(i);
 			} 	
 		}	

@@ -1,12 +1,10 @@
 all: transmitter receiver
 
-supp = ack.cpp checksum.cpp frame.cpp queue.cpp window.cpp
+transmitter: main-transmitter.cpp
+	g++ main-transmitter.cpp transmitter.cpp frame.cpp ack.cpp queue.cpp checksum.cpp window.cpp -lpthread -std=gnu++11 -o transmitter
 
-transmitter: transmitter.cpp
-	g++ -o transmitter main-transmitter.cpp transmitter.cpp $(supp) -lpthread -std=gnu++11
-
-receiver: receiver.cpp
-	g++ -o receiver main-receiver.cpp receiver.cpp $(supp) -lpthread -std=gnu++11
+receiver: main-receiver.cpp
+	g++ main-receiver.cpp receiver.cpp window.cpp frame.cpp ack.cpp queue.cpp checksum.cpp -lpthread -std=gnu++11 -o receiver
 
 clean:
 	$(RM) transmitter receiver
