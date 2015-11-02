@@ -68,12 +68,6 @@ void Receiver::receiveFrames() {;
     if (!tempQueue.isEmpty()) {
       Frame temp = tempQueue.del();   
       if (inWindow(temp.getNo())) {
-<<<<<<< HEAD
-      	cout << "receiver: " << temp.getSize() << endl;
-      	cout << temp.getChecksum() << endl;
-      	cout << Checksum::createChecksum(temp.getSerialized(), temp.getSize()-sizeof(temp.getChecksum())) << endl;
-=======
->>>>>>> b25966cb428c6f87d0049b87e91ea282dd202a4d
        if (temp.getChecksum() == Checksum::createChecksum(temp.getSerialized(), temp.getSize()-sizeof(temp.getChecksum()))) {
          printf("[ACK] Package %d secure. Sending ACK %d...\n", temp.getNo(), temp.getNo());
          sendACK(ACK, temp.getNo());
@@ -87,11 +81,7 @@ void Receiver::receiveFrames() {;
        sendACK(ACK,temp.getNo());
       }
       if (temp.getData()[strlen(temp.getData())-1]==Endfile) {
-<<<<<<< HEAD
-      	cout << "endfile received" << endl;
-=======
       	cout << "Endfile Received" << endl;
->>>>>>> b25966cb428c6f87d0049b87e91ea282dd202a4d
       	endFileReceived = true;
       	endFileFrame = temp.getNo();
       }
