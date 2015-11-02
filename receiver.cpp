@@ -17,6 +17,7 @@ Receiver::Receiver(char* _portNo) { //Ctor
   port = atoi(_portNo);
   startWindow = 0;
   endFileReceived = false;
+
   initializeReceiver();
   startChildProcess();
 }
@@ -59,7 +60,6 @@ void Receiver::startChildProcess() {
 void Receiver::receiveFrames() {;
   while (!(endFileReceived && startWindow == endFileFrame && sentAck[endFileFrame])) {
     while (sentAck[startWindow]) {
-      //tambahin kode buat nambahin frameBuffer[startWindow].getData() ke akhir string finalMessage ya mad
       string temp(frameBuffer[startWindow].getData());
       finalMessage += temp;
       sentAck[startWindow] = false;
@@ -68,9 +68,12 @@ void Receiver::receiveFrames() {;
     if (!tempQueue.isEmpty()) {
       Frame temp = tempQueue.del();   
       if (inWindow(temp.getNo())) {
+<<<<<<< HEAD
       	cout << "receiver: " << temp.getSize() << endl;
       	cout << temp.getChecksum() << endl;
       	cout << Checksum::createChecksum(temp.getSerialized(), temp.getSize()-sizeof(temp.getChecksum())) << endl;
+=======
+>>>>>>> b25966cb428c6f87d0049b87e91ea282dd202a4d
        if (temp.getChecksum() == Checksum::createChecksum(temp.getSerialized(), temp.getSize()-sizeof(temp.getChecksum()))) {
          printf("[ACK] Package %d secure. Sending ACK %d...\n", temp.getNo(), temp.getNo());
          sendACK(ACK, temp.getNo());
@@ -84,17 +87,22 @@ void Receiver::receiveFrames() {;
        sendACK(ACK,temp.getNo());
       }
       if (temp.getData()[strlen(temp.getData())-1]==Endfile) {
+<<<<<<< HEAD
       	cout << "endfile received" << endl;
+=======
+      	cout << "Endfile Received" << endl;
+>>>>>>> b25966cb428c6f87d0049b87e91ea282dd202a4d
       	endFileReceived = true;
       	endFileFrame = temp.getNo();
       }
     }
   }
+  cout << "Final message: " << finalMessage << endl;
 }
 
 void Receiver::childProcessFrames() {
     while (true) {
-   char serializedFrame[DATAMAX+6];
+      char serializedFrame[DATAMAX+6];
     
       socklen_t srcLen = sizeof(srcAddr);
       int rs = recvfrom(sockfd, serializedFrame, DATAMAX+6, 0, (struct sockaddr *) &srcAddr, &srcLen);
@@ -103,8 +111,10 @@ void Receiver::childProcessFrames() {
       
       if (rs == -1)
         error("ERROR: Failed to receive character from socket\n");
-
+      
       tempQueue.add(temp);
+
+      if (endFileReceived) break;
     }  
 }
 
