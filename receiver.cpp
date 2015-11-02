@@ -6,6 +6,7 @@
 
 #include "receiver.h"
 #include <stdio.h>
+using namespace std;
 
 Receiver::Receiver() {
   port = 8080;
@@ -68,17 +69,18 @@ void Receiver::receiveFrames() {;
     if (!tempQueue.isEmpty()) {
       Frame temp = tempQueue.del();   
       if (inWindow(temp.getNo())) {
-       if (temp.getChecksum() == Checksum::createChecksum(temp.getSerialized(), temp.getSize()-2)) {
-         printf("[ACK] Package %d secure. Sending ACK %d...\n", temp.getNo(), temp.getNo());
-         sendACK(ACK, temp.getNo());
-         frameBuffer[temp.getNo()] = temp;
-         sentAck[temp.getNo()] = true;
-       } else {
-         printf("[NAK] Package %d error or corrupt. Sending NAK...\n", temp.getNo());
-         sendACK(NAK, temp.getNo());
-       }
+        cout << temp.getChecksum() << " " <<Checksum::createChecksum(temp.getSerialized(), temp.getSize()) << endl; 
+        if (temp.getChecksum() == Checksum::createChecksum(temp.getSerialized(), temp.getSize()-2)) {
+          printf("[ACK] Package %d secure. Sending ACK %d...\n", temp.getNo(), temp.getNo());
+          sendACK(ACK, temp.getNo());
+          frameBuffer[temp.getNo()] = temp;
+          sentAck[temp.getNo()] = true;
+        } else {
+          printf("[NAK] Package %d error or corrupt. Sending NAK...\n", temp.getNo());
+          sendACK(NAK, temp.getNo());
+        }
       } else {
-       sendACK(ACK,temp.getNo());
+        sendACK(ACK,temp.getNo());
       }
       //cek apakah ada karakter endfil e atau nggak
     }
@@ -87,7 +89,7 @@ void Receiver::receiveFrames() {;
 
 void Receiver::childProcessFrames() {
     while (true) {
-   char serializedFrame[DATAMAX+6];
+      char serializedFrame[DATAMAX+6];
     
       socklen_t srcLen = sizeof(srcAddr);
       int rs = recvfrom(sockfd, serializedFrame, DATAMAX+6, 0, (struct sockaddr *) &srcAddr, &srcLen);
@@ -103,7 +105,7 @@ void Receiver::childProcessFrames() {
 
 void Receiver::sendACK(Byte ACKtype, Byte frameNo) {
   Ack *ack = new Ack(ACKtype, frameNo);
-  if(sendto(sockfd, ack->getSerialized(), sizeof(ack->getSerialized())-1, 0,(struct sockaddr *) &srcAddr, sizeof(srcAddr)) == -1)
+  if(sendto(sockfd, ack->getSerialized(), sizeof(ack->getSerialized()), 0,(struct sockaddr *) &srcAddr, sizeof(srcAddr)) == -1)
      error("ERROR: Failed to send ACK/NAK.\n");
 }
 
