@@ -39,26 +39,31 @@ Frame::Frame(const char* serializedFrame) {
     // allocating the data containers for the frame
     data = new char[i];
     memcpy(data, temp, i);
-
     bptr++; 	// skipping through etx
 
-    cout << *bptr << " " << bptr << " " << (unsigned short*) bptr << endl;
-    // checksum = (unsigned short) *bptr;
-    //memcpy(&checksum, bptr, 2);
-    cout << "make frame: " << checksum << endl;
-     //sptr++;
+    int offset = 4 + i;
+    //unsigned short* sptr = (unsigned short*) bptr;
+    //checksum = *sptr;
+    memcpy(&checksum, serializedFrame + offset, 2);
+    //sptr++;
     size = i + 6;
+    /*cout << "deserialized: " << endl;
+    for (int j=0;j<size;j++) {
+    	cout << serialized[j] << endl;
+    }*/
 }
 
 //cctor
 Frame::Frame(const Frame& f) {
 	no = f.no;
-	data = new char[ sizeof(f.data) ];
-	serialized = new char [ sizeof(f.serialized) ];
-	memcpy(data, f.data, sizeof(f.data));
-	memcpy(serialized, f.serialized, sizeof(f.serialized));
-	checksum = f.checksum;
 	size = f.size;
+
+	data = new char[ sizeof(f.data) ];
+	serialized = new char [size];
+	memcpy(data, f.data, sizeof(f.data));
+	memcpy(serialized, f.serialized, size);
+	
+	checksum = f.checksum;
 }
 
 //operator =
@@ -68,18 +73,18 @@ Frame& Frame::operator=(const Frame& f) {
 	delete [] serialized;
 
 	data = new char[ sizeof(f.data) ];
-	serialized = new char [ sizeof(f.serialized) ];
-	memcpy(data, f.data, sizeof(f.data));
-	memcpy(serialized, f.serialized, sizeof(f.serialized));
-	checksum = f.checksum;
 	size = f.size;
+	serialized = new char [size];
+	memcpy(data, f.data, sizeof(f.data));
+	memcpy(serialized, f.serialized, size);
+
+	checksum = f.checksum;
+
 	return *this;
 }
 
 //dtor
 Frame::~Frame() {
-	// delete[] data;
-	// delete[] serialized;
 }
 
 Byte Frame::getNo() {
@@ -115,10 +120,9 @@ void Frame::serialize() {
 
 	serializedFrame[i++] = ETX;
 
-	checksum = Checksum::createChecksum(serializedFrame,i);
+	checksum = Checksum::createChecksum(serializedFrame, i);
 	memcpy(serializedFrame + i, &checksum, sizeof(checksum));
 	i += sizeof(checksum); size = i;
-	cout << getSize() << endl;
 	serialized = new char[size];
 	memcpy(serialized, serializedFrame, size);
 }
