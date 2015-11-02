@@ -42,7 +42,11 @@ Frame::Frame(const char* serializedFrame) {
     bptr++; 	// skipping through etx
 
     unsigned short *sptr = (unsigned short*) bptr;
-    checksum = *sptr; sptr++;
+    checksum = *sptr;
+    cout << "make frame: " << checksum << endl;
+     sptr++;
+    size = i + 6;
+    cout << "make frame: " << getSize() << endl;
 }
 
 //cctor
@@ -50,10 +54,10 @@ Frame::Frame(const Frame& f) {
 	no = f.no;
 	data = new char[ sizeof(f.data) ];
 	serialized = new char [ sizeof(f.serialized) ];
-
 	memcpy(data, f.data, sizeof(f.data));
 	memcpy(serialized, f.serialized, sizeof(f.serialized));
 	checksum = f.checksum;
+	size = f.size;
 }
 
 //operator =
@@ -67,6 +71,7 @@ Frame& Frame::operator=(const Frame& f) {
 	memcpy(data, f.data, sizeof(f.data));
 	memcpy(serialized, f.serialized, sizeof(f.serialized));
 	checksum = f.checksum;
+	size = f.size;
 	return *this;
 }
 
@@ -112,6 +117,7 @@ void Frame::serialize() {
 	checksum = Checksum::createChecksum(serializedFrame,i);
 	memcpy(serializedFrame + i, &checksum, sizeof(checksum));
 	i += sizeof(checksum); size = i;
+	cout << getSize() << endl;
 	serialized = new char[size];
 	memcpy(serialized, serializedFrame, size);
 }

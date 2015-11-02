@@ -57,7 +57,7 @@ void Receiver::startChildProcess() {
 }
 
 void Receiver::receiveFrames() {;
-  while (!endFileReceived) {
+  while (!(endFileReceived && startWindow == endFileFrame && sentAck[endFileFrame])) {
     while (sentAck[startWindow]) {
       //tambahin kode buat nambahin frameBuffer[startWindow].getData() ke akhir string finalMessage ya mad
       string temp(frameBuffer[startWindow].getData());
@@ -68,7 +68,10 @@ void Receiver::receiveFrames() {;
     if (!tempQueue.isEmpty()) {
       Frame temp = tempQueue.del();   
       if (inWindow(temp.getNo())) {
-       if (temp.getChecksum() == Checksum::createChecksum(temp.getSerialized(), temp.getSize()-2)) {
+      	cout << "receiver: " << temp.getSize() << endl;
+      	cout << temp.getChecksum() << endl;
+      	cout << Checksum::createChecksum(temp.getSerialized(), temp.getSize()-sizeof(temp.getChecksum())) << endl;
+       if (temp.getChecksum() == Checksum::createChecksum(temp.getSerialized(), temp.getSize()-sizeof(temp.getChecksum()))) {
          printf("[ACK] Package %d secure. Sending ACK %d...\n", temp.getNo(), temp.getNo());
          sendACK(ACK, temp.getNo());
          frameBuffer[temp.getNo()] = temp;
@@ -80,7 +83,11 @@ void Receiver::receiveFrames() {;
       } else {
        sendACK(ACK,temp.getNo());
       }
-      //cek apakah ada karakter endfil e atau nggak
+      if (temp.getData()[strlen(temp.getData())-1]==Endfile) {
+      	cout << "endfile received" << endl;
+      	endFileReceived = true;
+      	endFileFrame = temp.getNo();
+      }
     }
   }
 }

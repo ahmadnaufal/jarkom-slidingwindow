@@ -44,6 +44,7 @@ private:
   bool endFileReceived;
   Frame frameBuffer[MAXSEQ];
   int startWindow;
+  int endFileFrame;
   Queue tempQueue;
   string finalMessage;
   bool sentAck[MAXSEQ];
