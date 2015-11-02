@@ -103,7 +103,6 @@ void Transmitter::sendFrames() {
 	//Initialize the window
 	while (!window.getFrameBuffer().isFull()) {
 		if(j<=fcount) {
-			cout << frameStorage[j].getData() << endl;
 			window.addFrame(frameStorage[j], timeCount);
 			timeCount += 1;
 			j++;
